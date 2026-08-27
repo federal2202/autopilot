@@ -8,10 +8,7 @@ export default function Closing() {
     <section className="section section-black closing-section">
       <div className="container closing-inner">
         <Reveal>
-          <span className="eyebrow">
-            <span className="eyebrow-dot" aria-hidden="true" />
-            {closing.eyebrow}
-          </span>
+          <span className="eyebrow">{closing.eyebrow}</span>
         </Reveal>
         <Reveal delay={0.08}>
           <h2 className="section-heading">{closing.heading}</h2>

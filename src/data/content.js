@@ -2,9 +2,9 @@
 
 export const site = {
   name: "AR Autopilot",
-  title: "AR Autopilot — system subskrypcyjny dla marek i lokali",
+  title: "AR Autopilot — Film, sesja i strona WWW w jednej subskrypcji",
   description:
-    "AR Autopilot to agencja marketingowa, która stawia Twój rozwój na autopilocie: profesjonalna produkcja wideo i foto, montaż, prowadzenie social media, poszukiwanie współprac i dedykowane strony internetowe.",
+    "AR Autopilot tworzy dla Twojego biznesu dedykowany film dokumentalny, montuje z niego Shorts i Rolki, robi profesjonalną sesję zdjęciową i buduje nowoczesną stronę internetową — wszystko w jednej miesięcznej subskrypcji.",
   url: "https://www.ar-autopilot.pl",
   locale: "pl_PL",
 };
@@ -12,8 +12,7 @@ export const site = {
 export const contact = {
   eyebrow: "Kontrola misji",
   heading: "Włącz autopilota",
-  subtext:
-    "Masz lokal, klinikę, siłownię albo markę osobistą? Napisz — dobierzemy pakiet i ustawimy kurs razem.",
+  subtext: "Masz lokal, klinikę, siłownię albo markę osobistą? Napisz — ustalimy szczegóły produkcji i ustawimy kurs razem.",
   email: "kontakt@ar-autopilot.pl",
   emailLabel: "Napisz do nas bezpośrednio",
   emailCta: "Napisz e-mail",
@@ -25,222 +24,89 @@ export const contact = {
 };
 
 export const navLinks = [
-  { label: "Segmenty", href: "#segmenty" },
-  { label: "Usługi pojedyncze", href: "#usluGi" },
+  { label: "Oferta", href: "#oferta" },
+  { label: "Jak to działa", href: "#jak-to-dziala" },
   { label: "Partnerzy", href: "#partnerzy" },
   { label: "Kontakt", href: "#kontakt" },
 ];
 
 export const hero = {
-  eyebrow: "System subskrypcyjny & oferta usług",
+  eyebrow: "Jedna subskrypcja. Kompletny wizerunek.",
+  headingParts: ["Auto", "pilot"],
   heading: "Autopilot",
-  lead:
-    "Nowoczesna wizytówka agencji: pakiety abonamentowe i usługi dedykowane, które przyspieszają wzrost Twojego lokalu, kliniki, siłowni czy marki osobistej.",
-  chipTop: {
-    text: "Profesjonalny sprzęt, montaż i social media — bez zarządzania zespołem po Twojej stronie.",
-  },
-  chipBottom: {
-    text: "Ty prowadzisz biznes. My prowadzimy jego wizerunek.",
-  },
+  lead: "Dedykowany film, sesja zdjęciowa i strona internetowa Twojego biznesu.",
   ctas: [
-    { label: "Zobacz pakiety", href: "#segmenty", kind: "primary" },
-    { label: "Usługi pojedyncze", href: "#usluGi", kind: "secondary" },
-    { label: "Napisz do nas", href: "#kontakt", kind: "ghost" },
+    { label: "Zobacz ofertę", href: "#oferta", kind: "primary" },
+    { label: "Umów rozmowę", href: "#kontakt", kind: "secondary" },
   ],
 };
 
-// Etapy trasy autopilota — napędzają scrollową sekcję GrowthPath.
+// Krótki pas faktów + akapit "o nas" — odpowiednik sekcji stat-strip/about
+// w referencji. Same sformułowania z hero/offer, przełożone na nowy kształt.
+export const intro = {
+  stats: ["Jedna subskrypcja.", "Film. Sesja. Strona.", "Zero dopłat.", "Co miesiąc nowe materiały."],
+  about:
+    "AR Autopilot tworzy dla Twojego biznesu dedykowany film dokumentalny, montuje z niego Shorts i Rolki, robi profesjonalną sesję zdjęciową i buduje nowoczesną stronę internetową — wszystko w jednej miesięcznej subskrypcji.",
+};
+
+// Etapy trasy autopilota — napędzają sekcję ProcessSteps.
 export const growthPath = {
   eyebrow: "Jak działa autopilot",
-  heading: "Jedna trasa, cztery etapy",
-  subtext: "Każdy pakiet przejeżdża tę samą, sprawdzoną trasę do widoczności.",
+  heading: "Jeden film, cztery etapy",
+  subtext: "Tak powstaje Twój Autopilot — od pierwszego ujęcia po gotową stronę internetową.",
+  teaser: "Każdy etap prowadzi do jednego celu — gotowego wizerunku Twojej marki.",
   stops: [
     {
       km: "01",
       word: "Produkcja",
-      title: "Produkcja",
-      text: "Profesjonalne kamery filmowe i aparaty na miejscu — nagrania i sesje, które budują kinowy wizerunek.",
+      title: "Produkcja filmu i sesji",
+      text: "Kręcimy Twój film i sesję zdjęciową — profesjonalnym sprzętem, na miejscu.",
+      tags: ["Kamera", "Dźwięk", "Sesja zdjęciowa", "Scenariusz"],
     },
     {
       km: "02",
       word: "Montaż",
-      title: "Montaż",
-      text: "Zaawansowany montaż wideo w programach klasy profesjonalnej — z materiału robimy historię.",
+      title: "Kinowy montaż",
+      text: "Z materiału montujemy pełnoprawny film dokumentalny, gotowy na YouTube.",
+      tags: ["Montaż kinowy", "Kolorystyka", "Muzyka"],
     },
     {
       km: "03",
-      word: "Zasięgi",
-      title: "Social media",
-      text: "Analiza, prowadzenie i podnoszenie jakości profilu — zasięgi rosną, bo rośnie jakość.",
+      word: "Shorts",
+      title: "Shorts & Rolki",
+      text: "Ten sam materiał tniemy na Shorts i Rolki — bez dodatkowych sesji.",
+      tags: ["Shorts", "Rolki", "Cięcie pionowe", "Napisy"],
     },
     {
       km: "04",
       word: "Premiera",
-      title: "Web & współprace",
-      text: "Dedykowana strona internetowa, automatyzacja procesów i aktywne poszukiwanie partnerstw — domykamy pełny obraz marki.",
+      title: "Strona WWW",
+      text: "Strona internetowa spina film, zdjęcia i markę w jedną całość.",
+      tags: ["Projekt strony", "Wdrożenie", "Media", "Publikacja"],
     },
   ],
 };
 
-export const segments = {
-  eyebrow: "Km 0 — wybierz trasę",
-  heading: "Trzy segmenty, jeden autopilot",
-  subtext:
-    "Każdy pakiet ma jasno rozpisany zakres korzyści — od sprzętu filmowego, przez montaż, po social media i web dev.",
-  list: [
+export const offer = {
+  eyebrow: "Jedna usługa. Zero wyboru.",
+  heading: "Twój wizerunek w jednej subskrypcji",
+  subtext: "Bez pakietów. Bez dopłat. Film, zdjęcia i strona — razem.",
+  items: [
     {
-      id: "gastronomia",
-      label: "Gastronomia & Lokale",
-      shortLabel: "Gastronomia",
-      heading: "Gastronomia & Lokale Usługowe",
-      subtext: "Restauracje, barberzy i kawiarnie — pakiety budujące tłum i przyciągające klientów.",
-      packages: [
-        {
-          name: "Magnes & Echo",
-          niche: "Restauracja",
-          bullets: [
-            "Profesjonalne kamery filmowe i aparaty fotograficzne",
-            "Zaawansowany montaż wideo budujący apetyczny wizerunek",
-            "Kompleksowa analiza i prowadzenie mediów społecznościowych",
-            "Stworzenie spersonalizowanej strony internetowej",
-          ],
-        },
-        {
-          name: "Autopilot Tłumu",
-          niche: "Barber",
-          bullets: [
-            "Dynamiczne materiały z profesjonalnych kamer i aparatów",
-            "Wysokiej jakości montaż wideo przyciągający klientów",
-            "Optymalizacja wyglądu i jakości profilu w social media",
-            "Spersonalizowana strona www z systemem rezerwacji",
-          ],
-        },
-        {
-          name: "Magnes Klientów",
-          niche: "Kawiarnia",
-          bullets: [
-            "Klimatyczne sesje zdjęciowe i filmowe profesjonalnym sprzętem",
-            "Montaż krótkich form wideo budujących społeczność",
-            "Strategiczna poprawa estetyki profilu i jakości treści",
-            "Dedykowana strona internetowa dla Twojego lokalu",
-          ],
-        },
-      ],
+      badge: "Flagowa usługa",
+      name: "Dedykowany Film Dokumentalny",
+      bullets: ["Twoja historia, opowiedziana od A do Z", "Kamera, scenariusz, montaż kinowy", "Co miesiąc nowe Shorts i Rolki"],
     },
     {
-      id: "zdrowie",
-      label: "Zdrowie, Ruch & Fitness",
-      shortLabel: "Zdrowie & Fitness",
-      heading: "Zdrowie, Ruch & Fitness",
-      subtext: "Kliniki, trenerzy i siłownie — pakiety budujące fundament, progres i ruch.",
-      packages: [
-        {
-          name: "Fundament & Progres",
-          niche: "Klinika Fizjoterapii",
-          bullets: [
-            "Wysokiej klasy produkcja wideo i foto sprzętem filmowym",
-            "Montaż materiałów edukacyjnych i wizerunkowych",
-            "Budowanie autorytetu i profesjonalnego PR-u profilu",
-            "Aktywne szukanie współprac i spersonalizowana strona www",
-          ],
-        },
-        {
-          name: "Autopilot Ruchu",
-          niche: "Trenerzy / Fizjoterapeuci",
-          bullets: [
-            "Profesjonalne nagrania z sesji i treningów",
-            "Dynamiczny montaż angażujących materiałów",
-            "Analiza profilu i podniesienie jakości wizualnej",
-            "Stworzenie nowoczesnej strony internetowej marki",
-          ],
-        },
-        {
-          name: "Autopilot Progresu",
-          niche: "Siłownia",
-          bullets: [
-            "Pełna produkcja filmowa i fotograficzna na obiekcie",
-            "Profesjonalny montaż motywacyjnych materiałów wideo",
-            "Rozwój zasięgów, analiza i pozyskiwanie partnerstw",
-            "Dedykowana, responsywna strona internetowa",
-          ],
-        },
-      ],
+      name: "Sesja Zdjęciowa",
+      bullets: ["Miejsce, zespół i usługi w kadrze", "Gotowe do strony i social media", "Spójny, kinowy styl"],
     },
     {
-      id: "marki",
-      label: "Marki Osobiste & Twórcy",
-      shortLabel: "Marki Osobiste",
-      heading: "Marki Osobiste & Twórcy",
-      subtext: "Sportowcy, podróżnicy i projektanci odzieży — pełny autopilot wizerunkowy i kinowa jakość.",
-      packages: [
-        {
-          name: "Autopilot Marki",
-          niche: "Sportowcy",
-          bullets: [
-            "Kinowa jakość nagrań z profesjonalnych kamer i aparatów",
-            "Montaż materiałów podkreślających sportową sylwetkę i sukces",
-            "Kompleksowy PR profilu i pozyskiwanie lukratywnych współprac",
-            "Spersonalizowana strona internetowa budująca markę",
-          ],
-        },
-        {
-          name: "Autopilot Podróży",
-          niche: "Podróżnicy",
-          bullets: [
-            "Zapierające dech w piersiach materiały filmowe i zdjęcia",
-            "Montaż wideo w profesjonalnych programach edycyjnych",
-            "Analiza zasięgów, optymalizacja profilu i monetyzacja",
-            "Autorska strona internetowa prezentująca wyprawy",
-          ],
-        },
-        {
-          name: "Autopilot Projektu",
-          niche: "Projektanci Odzieży",
-          bullets: [
-            "Profesjonalne sesje lookbookowe i filmowe kampanie",
-            "Montaż dynamicznych shortów i rolek produktowych",
-            "Strategia wizerunkowa i szukanie strategicznych partnerstw",
-            "Nowoczesny sklep / strona internetowa marki odzieżowej",
-          ],
-        },
-      ],
+      name: "Nowoczesna Strona WWW",
+      bullets: ["Zaprojektowana pod Twój biznes", "Film, zdjęcia i marka w jednym miejscu", "Pierwsze wrażenie, które konwertuje"],
     },
   ],
-};
-
-export const singleServices = {
-  eyebrow: "Poza abonamentem",
-  heading: "Oferta usług pojedynczych",
-  subtext: "Nie potrzebujesz pełnego pakietu? Wybierz punktowe wsparcie.",
-  list: [
-    {
-      name: "Film Promocyjny",
-      niche: "Dla usługi / osoby",
-      bullets: [
-        "Nagranie profesjonalnymi kamerami i aparatami",
-        "Wysokiej jakości montaż w profesjonalnych programach",
-        "Analiza wizualna i dopasowanie do grupy docelowej",
-      ],
-    },
-    {
-      name: "Analiza Profilu",
-      niche: "Audyt & Strategia",
-      bullets: [
-        "Szczegółowa rozmowa analizująca media społecznościowe",
-        "Konkretne sugestie dalszych kroków i poprawy wizerunku",
-        "Strategia rozwoju i zwiększania konwersji",
-      ],
-    },
-    {
-      name: "Strona WWW & Sesja",
-      niche: "Cyfrowy Wizerunek",
-      bullets: [
-        "Stworzenie spersonalizowanej, nowoczesnej strony internetowej",
-        "Profesjonalna sesja zdjęciowa wysokiej jakości",
-        "Kompleksowe podniesienie estetyki i jakości wizualnej",
-      ],
-    },
-  ],
+  cta: { label: "Zamów Autopilota", href: "#kontakt" },
 };
 
 export const partners = {
@@ -280,9 +146,9 @@ export const partners = {
 
 export const closing = {
   eyebrow: "Cel podróży",
-  heading: "Kompleksowy partner Twojego sukcesu online",
-  text: "Wybierz swój pakiet i przyspiesz swój wzrost.",
-  cta: { label: "Wybierz swój pakiet", href: "#segmenty" },
+  heading: "Film, zdjęcia i strona, które sprzedają Twój biznes",
+  text: "Jedna subskrypcja. Zero decyzji o pakietach — tylko efekt.",
+  cta: { label: "Zamów Autopilota", href: "#kontakt" },
 };
 
 export const footer = {

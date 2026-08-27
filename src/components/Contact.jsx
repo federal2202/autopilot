@@ -4,13 +4,10 @@ import Reveal from "./Reveal";
 
 export default function Contact() {
   return (
-    <section id="kontakt" className="section section-tint">
+    <section id="kontakt" className="section section-black">
       <div className="container" style={{ maxWidth: 640, margin: "0 auto" }}>
         <div className="section-intro">
-          <span className="eyebrow">
-            <span className="eyebrow-dot" aria-hidden="true" />
-            {contact.eyebrow}
-          </span>
+          <span className="eyebrow">{contact.eyebrow}</span>
           <h2 className="section-heading">{contact.heading}</h2>
           <p className="section-subtext">{contact.subtext}</p>
         </div>

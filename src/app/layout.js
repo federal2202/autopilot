@@ -1,5 +1,5 @@
 import localFont from "next/font/local";
-import { Fraunces } from "next/font/google";
+import { Fraunces, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { site } from "@/data/content";
 import MotionProvider from "@/components/MotionProvider";
@@ -22,6 +22,15 @@ const fraunces = Fraunces({
   weight: "variable",
   axes: ["opsz", "SOFT", "WONK"],
   variable: "--font-fraunces",
+  display: "swap",
+});
+
+// Display grotesk for the big nbnzia-style headlines — stands in for the
+// reference site's commercial "Bdogrotesk" (not freely licensable).
+const grotesk = Space_Grotesk({
+  subsets: ["latin", "latin-ext"],
+  weight: ["500", "700"],
+  variable: "--font-grotesk",
   display: "swap",
 });
 
@@ -58,12 +67,12 @@ export const metadata = {
 };
 
 export const viewport = {
-  themeColor: "#050505",
+  themeColor: "#f5f2f3",
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="pl" className={`${geist.variable} ${fraunces.variable}`}>
+    <html lang="pl" className={`${geist.variable} ${fraunces.variable} ${grotesk.variable}`}>
       <body>
         <MotionProvider>
           <SmoothScroll />

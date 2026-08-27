@@ -9,9 +9,9 @@ export default function Footer() {
       <div className="container">
         <div className="footer-top">
           <div className="navbar-logo">
-            <Logo />
+            <Logo variant="light" />
           </div>
-          <p style={{ color: "var(--muted)", fontSize: 14, maxWidth: 360 }}>{footer.tagline}</p>
+          <p style={{ color: "#9da3aa", fontSize: 14, maxWidth: 360 }}>{footer.tagline}</p>
         </div>
 
         <div className="footer-bottom">

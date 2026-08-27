@@ -1,9 +1,9 @@
 import Navbar from "@/components/Navbar";
 import Hero from "@/components/Hero";
-import GrowthPath from "@/components/GrowthPath";
-import SectionDivider from "@/components/SectionDivider";
-import Segments from "@/components/Segments";
-import SingleServices from "@/components/SingleServices";
+import Intro from "@/components/Intro";
+import ScalingMedia from "@/components/ScalingMedia";
+import ServicesList from "@/components/ServicesList";
+import ProcessSteps from "@/components/ProcessSteps";
 import Partners from "@/components/Partners";
 import Closing from "@/components/Closing";
 import Contact from "@/components/Contact";
@@ -15,11 +15,10 @@ export default function Home() {
       <Navbar />
       <main>
         <Hero />
-        <GrowthPath />
-        <SectionDivider />
-        <Segments />
-        <SingleServices />
-        <SectionDivider />
+        <Intro />
+        <ScalingMedia />
+        <ServicesList />
+        <ProcessSteps />
         <Partners />
         <Closing />
         <Contact />
