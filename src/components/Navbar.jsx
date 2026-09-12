@@ -27,7 +27,7 @@ export default function Navbar() {
     <header className={`navbar${scrolled ? " is-scrolled" : ""}`}>
       <div className="navbar-inner">
         <a href="#hero" className="navbar-logo">
-          <Logo />
+          <Logo size={46} />
         </a>
 
         <nav className="navbar-links" aria-label="Nawigacja główna">

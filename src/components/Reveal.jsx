@@ -4,7 +4,7 @@ import { m } from "framer-motion";
 
 // Scale-only — no opacity involved, so it can't interact with the glass
 // surfaces' backdrop-filter alpha (that's what caused the color pop).
-export default function Reveal({ children, className, delay = 0, as = "div", style }) {
+export default function Reveal({ children, className, delay = 0, as = "div", style, ...rest }) {
   const Component = m[as] || m.div;
   return (
     <Component
@@ -14,6 +14,7 @@ export default function Reveal({ children, className, delay = 0, as = "div", sty
       transition={{ duration: 0.35, delay, ease: "easeInOut" }}
       className={className}
       style={style}
+      {...rest}
     >
       {children}
     </Component>

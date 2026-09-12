@@ -320,7 +320,7 @@ button {
   font-weight: 600;
   letter-spacing: 1.5px;
   text-transform: uppercase;
-  border-radius: 999px;
+  border-radius: 0;
   transition: transform 0.3s ease, background 0.3s ease, border-color 0.3s ease, color 0.3s ease;
   white-space: nowrap;
 }
@@ -461,7 +461,7 @@ button {
   position: relative;
   display: flex;
   align-items: center;
-  gap: 12px;
+  gap: 14px;
   font-weight: 700;
   font-size: 15px;
   letter-spacing: 0.3px;
@@ -486,12 +486,16 @@ button {
 }
 
 .navbar-logo-accent {
-  color: var(--ink);
+  /* Matches the mark SVG's own fill (#0a0a0b) exactly, rather than
+     --ink (#1f1f1f) — close enough most places, but next to the mark
+     the slight mismatch reads as two different colors. */
+  color: #0a0a0b;
   font-family: var(--font-grotesk), sans-serif;
   font-weight: 700;
-  font-size: 16px;
+  font-size: 26px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.2px;
+  text-shadow: 0 1px 6px rgba(15, 15, 15, 0.2);
 }
 
 .navbar-links {
@@ -503,12 +507,13 @@ button {
 .navbar-link {
   position: relative;
   padding: 8px 0;
-  font-size: 13px;
-  font-weight: 600;
+  font-size: 14px;
+  font-weight: 700;
   letter-spacing: 1px;
   text-transform: uppercase;
   color: var(--ink);
-  opacity: 0.55;
+  opacity: 0.9;
+  text-shadow: 0 1px 6px rgba(15, 15, 15, 0.18);
   transition: opacity 0.25s ease;
 }
 
@@ -518,8 +523,8 @@ button {
 
 .navbar-cta.btn {
   display: none;
-  padding: 11px 22px;
-  font-size: 11px;
+  padding: 15px 32px;
+  font-size: 13px;
   background: var(--ink);
   color: var(--cream);
   border-color: var(--ink);
@@ -599,65 +604,168 @@ button {
   position: relative;
   overflow: hidden;
   display: flex;
-  align-items: center;
+  align-items: flex-end;
   min-height: 100svh;
 }
 
-.hero-glow-layer {
-  position: absolute;
+/* ---- cold-open loader: merged wordmark -> split -> 3-slide gap -> the
+   final slide grows (manual FLIP, see Hero.jsx) into the fullscreen photo
+   that the resting hero sits on. ---- */
+.hero-loader {
+  position: fixed;
   inset: 0;
-  z-index: 0;
+  z-index: 1400;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--cream);
+  /* This is what's actually revealing the navbar (see Hero.jsx's settle()
+     — it flips this to transparent with a plain style write, not a class
+     toggle) — without a transition here that flip is a hard, instant
+     snap from opaque cream to see-through, which is its own "too abrupt"
+     bug even though it fixed the z-index flash it replaced.
+     Was left at 0.4s when every other reveal (scrim, statement) got
+     slowed down on request — at 0.4s this was the fastest thing in the
+     whole sequence and the one triggered earliest (right as the photo's
+     own expand transition ends), so it read as a quick "flash" right
+     before the slower scrim/statement fades caught up. Matched to the
+     scrim's 1.4s for one consistent pace. Must stay <= the loader's own
+     framer-motion exit `duration` in Hero.jsx, or React unmounts the
+     element before this finishes and the reveal cuts off abruptly. */
+  transition: background 1.4s ease;
   pointer-events: none;
 }
 
-.hero-glow {
+.hero-loader-row {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.hero-loader-word {
+  display: inline-block;
+  overflow: hidden;
+  font-family: var(--font-grotesk), var(--font-geist), sans-serif;
+  font-size: clamp(52px, 11vw, 168px);
+  font-weight: 700;
+  letter-spacing: -2px;
+  line-height: 0.96;
+  text-transform: uppercase;
+  color: var(--ink);
+  white-space: nowrap;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.hero-loader-word.is-faded {
+  opacity: 0;
+  transform: translateY(-14px);
+}
+
+/* Invisible spacer the same size as .hero-visual-frame — the frame itself
+   is a fixed, independently-centered sibling (see Hero.jsx), so this is
+   what actually pushes the two words apart via flex reflow. */
+.hero-loader-gap {
+  width: 0;
+  transition: width 0.7s cubic-bezier(0.65, 0, 0.35, 1), margin 0.7s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.hero-loader-gap.is-open {
+  width: clamp(240px, 30vw, 420px);
+  margin: 0 clamp(14px, 2.4vw, 30px);
+}
+
+/* No rounding anywhere — the frame is a sharp-edged window onto the
+   photo throughout, including once it fills the screen. */
+.hero-visual-frame {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  overflow: hidden;
+  width: 0;
+  /* Height is a pure function of width via aspect-ratio, not an
+     independent clamp() — see the comment below for why that distinction
+     is the whole point. --vp-ratio is set from Hero.jsx (window.innerWidth
+     / window.innerHeight); 1.5 only covers the instant before that effect
+     runs. */
+  aspect-ratio: var(--vp-ratio, 1.5);
+  transform: translate(-50%, -50%);
+  background: var(--cream);
+  /* z-index is set inline from React (see Hero.jsx), not here — while
+     mounted pre-settle it needs to be above the navbar (999); once
+     settled it needs to disappear entirely (not just drop to 0 — the
+     scrim and statement text below are both explicitly z-index: auto,
+     and *any* explicit z-index on this frame, even 0, would still beat
+     "auto" and paint the photo back on top of them). */
+  /* Keeps the browser rendering the photo on its own GPU layer at a
+     stable resolution through the resize, instead of re-decoding it at
+     each intermediate box size (which reads as a brightness "pop" right
+     as it reaches fullscreen). */
+  will-change: width, height;
+  transition: width 0.7s cubic-bezier(0.65, 0, 0.35, 1), height 0.7s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+/* `aspect-ratio: var(--vp-ratio)` (set to viewportWidth / viewportHeight)
+   is what actually kills the flicker: with `object-fit: cover`, the crop
+   window it computes depends only on the box's aspect ratio, so if that
+   ratio never changes between this small preview and the fullscreen box
+   (100vw × 100dvh — the viewport's own ratio, by definition) growing from
+   one to the other is a pure magnification with nothing to re-crop. A
+   plain `height: clamp(...)` alongside `width: clamp(...)` can't guarantee
+   this — the two clamps hit their min/max bounds independently depending
+   on the viewport, so the ratio only matched by coincidence in the
+   middle of both ranges. aspect-ratio keeps height locked to width
+   exactly, however width's clamp resolves. Once the manual FLIP (see
+   Hero.jsx) sets an explicit `height` inline for the fullscreen state,
+   that explicit value wins over aspect-ratio automatically — no special
+   handling needed for the handoff. */
+.hero-visual-frame.is-open {
+  width: clamp(240px, 30vw, 420px);
+}
+
+/* object-fit: cover, deliberately — always fills the box edge-to-edge on
+   any screen (no bars, no viewport-dependent gap to size for), at the
+   cost of cropping some of the photo. object-position on the element
+   biases the crop toward the subject's head for stas.JPG (see Hero.jsx). */
+.hero-visual-img {
   position: absolute;
-  border-radius: 50%;
-  filter: blur(90px);
-  background: radial-gradient(circle, rgba(255, 205, 113, 0.35) 0%, transparent 70%);
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.35s ease;
 }
 
-.hero-glow-a {
-  width: 560px;
-  height: 560px;
-  top: 8%;
-  left: 8%;
-}
-
-.hero-glow-b {
-  width: 620px;
-  height: 620px;
-  bottom: 4%;
-  right: 6%;
-  background: radial-gradient(circle, rgba(250, 231, 213, 0.55) 0%, transparent 70%);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .hero-glow-a,
-  .hero-glow-b {
-    animation: hero-glow-drift 12s ease-in-out infinite;
-  }
-
-  .hero-glow-b {
-    animation-delay: -6s;
-  }
-}
-
-@keyframes hero-glow-drift {
-  0%,
-  100% {
-    transform: translate(0, 0) scale(1);
-  }
-  50% {
-    transform: translate(3%, -4%) scale(1.08);
-  }
+/* Gentle top-and-bottom vignette — top keeps the navbar readable
+   regardless of what's behind it, bottom is where the statement text
+   sits. Kept soft (low peak opacity, wide falloff) so it reads as a
+   vignette rather than a hard band. */
+.hero-visual-scrim {
+  position: absolute;
+  inset: 0;
+  /* No explicit z-index — it needs to stay out of its own stacking
+     context (same reasoning as .hero-container above) so it paints, in
+     plain DOM order, between the frame (below) and the statement text
+     (above, and blending against everything painted before it). */
+  background: linear-gradient(
+    to bottom,
+    rgba(15, 15, 15, 0.32) 0%,
+    rgba(15, 15, 15, 0) 25%,
+    rgba(15, 15, 15, 0) 50%,
+    rgba(15, 15, 15, 0.55) 100%
+  );
+  pointer-events: none;
 }
 
 .hero-container {
   position: relative;
-  z-index: 1;
-  padding-top: 120px;
-  padding-bottom: 48px;
+  /* Cancels the z-index the shared .container utility sets, so this
+     stacks with its hero-section siblings (frame, scrim, loader) purely
+     by DOM order rather than jumping above/below them by an unrelated
+     numeric value — those siblings are deliberately z-index: auto too
+     (see .hero-visual-frame above), and mixing an explicit value in here
+     would fight that. */
+  z-index: auto;
+  padding-bottom: 90px;
   width: 100%;
 }
 
@@ -675,100 +783,25 @@ button {
   width: 100%;
 }
 
-/* The reference hero runs its headline directly over/around a full-bleed
-   photo — here the ASCII sculpture sits inside the heading flow itself
-   (a dark panel breaking up the cream line), not off in a side column. */
-.hero-visual-inline {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  vertical-align: middle;
-  overflow: hidden;
-  background: var(--near-black);
-  border-radius: 14px;
-  margin: 0 clamp(6px, 1.4vw, 18px);
-  width: clamp(90px, 13vw, 200px);
-  height: clamp(58px, 8vw, 118px);
-  transform: translateY(6%);
-}
-
-.hero-sculpture {
-  display: block;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  opacity: 0.92;
-}
-
 @media (min-width: 1120px) {
   .hero-copy {
-    max-width: 900px;
-  }
-
-  .hero-copy .hero-heading-wrap {
-    margin: 26px 0 34px;
-  }
-
-  .hero-copy .hero-lead {
-    margin: 0 auto 8px;
-  }
-
-  .hero-copy .hero-heading {
-    font-size: clamp(52px, 7.4vw, 128px);
+    max-width: 1040px;
   }
 }
 
 @media (max-width: 640px) {
   .hero-container {
-    padding-top: 90px;
-    padding-bottom: 32px;
+    padding-bottom: 56px;
   }
 
-  .hero-glow-a {
-    width: 320px;
-    height: 320px;
+  .hero-visual-frame.is-open {
+    width: clamp(150px, 60vw, 260px);
   }
 
-  .hero-glow-b {
-    width: 340px;
-    height: 340px;
+  .hero-loader-gap.is-open {
+    width: clamp(150px, 60vw, 260px);
+    margin: 0 clamp(8px, 2vw, 16px);
   }
-
-  .hero-lead {
-    font-size: 16px;
-  }
-
-  .hero-visual-inline {
-    width: clamp(70px, 30vw, 130px);
-    height: clamp(46px, 18vw, 80px);
-  }
-}
-
-.hero-heading-wrap {
-  margin: 26px auto 34px;
-}
-
-.hero-heading {
-  display: block;
-  font-family: var(--font-grotesk), var(--font-geist), sans-serif;
-  font-size: clamp(64px, 12.5vw, 172px);
-  font-weight: 500;
-  letter-spacing: -3px;
-  line-height: 0.96;
-  color: var(--fg);
-  text-transform: uppercase;
-}
-
-.hero-heading-line {
-  display: block;
-  overflow: hidden;
-}
-
-.hero-heading-accent {
-  display: inline-flex;
-  align-items: center;
-  flex-wrap: wrap;
-  justify-content: center;
 }
 
 .kinetic-letter {
@@ -776,72 +809,37 @@ button {
   will-change: transform, opacity, filter;
 }
 
-.hero-lead {
-  max-width: 640px;
-  margin: 0 auto 8px;
-  color: var(--body-text);
-  font-size: clamp(17px, 2vw, 21px);
-  line-height: 1.6;
-}
-
-.hero-ctas {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 16px;
-  margin-top: 40px;
-}
-
-.hero-ctas .btn {
-  min-width: 250px;
-  justify-content: center;
-}
-
-@media (max-width: 480px) {
-  .hero-ctas .btn {
-    width: 100%;
-    max-width: 320px;
-  }
-}
-
-.hero-scroll-cue {
-  position: absolute;
-  bottom: 36px;
-  left: 50%;
-  transform: translateX(-50%);
+/* The big sales statement over the fullscreen photo — this, not a
+   repeated wordmark, is the hero's headline text (nbnzia's "EVERY GREAT
+   TRICK…" equivalent). */
+.hero-statement {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  font-size: 11px;
-  letter-spacing: 2px;
+  gap: 6px;
+  max-width: 980px;
+}
+
+.hero-statement-line {
+  font-family: var(--font-grotesk), var(--font-geist), sans-serif;
+  font-size: clamp(28px, 4.6vw, 60px);
+  font-weight: 500;
+  letter-spacing: -1px;
+  line-height: 1.15;
   text-transform: uppercase;
-  color: var(--muted-2);
-  z-index: 1;
-}
-
-.hero-scroll-cue-line {
-  width: 1px;
-  height: 34px;
-  background: linear-gradient(to bottom, var(--muted-2), transparent);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .hero-scroll-cue-line {
-    animation: scroll-cue 2s ease-in-out infinite;
-  }
-}
-
-@keyframes scroll-cue {
-  0%,
-  100% {
-    transform: scaleY(1);
-    opacity: 0.6;
-  }
-  50% {
-    transform: scaleY(0.5);
-    opacity: 1;
-  }
+  text-align: center;
+  /* Plain solid color, no mix-blend-mode, no text-shadow — the adaptive
+     per-pixel contrast (and every reveal trick built to work around its
+     isolation rules: veils, delayed color swaps) kept surfacing new
+     flashes of its own, each smaller than the last but never fully
+     gone. Traded the "auto-contrast" effect away entirely so the
+     element is simple enough to just fade in normally (see Hero.jsx —
+     the whole .hero-statement now animates with plain framer-motion
+     opacity, which was never safe to do while this depended on
+     mix-blend-mode). Relies on .hero-visual-scrim's own darkening for
+     legibility instead of inverting per pixel. */
+  color: var(--cream);
 }
 
 /* ============ INTRO (stat strip + about blurb) ============ */
@@ -881,8 +879,29 @@ button {
 .intro-about-text {
   font-size: clamp(19px, 2.4vw, 27px);
   line-height: 1.5;
-  color: var(--fg);
+  color: rgba(31, 31, 31, 0.18);
   letter-spacing: -0.3px;
+}
+
+/* ============ PINNED TAGLINE (scroll-scrubbed statement) ============ */
+
+.tagline-section {
+  min-height: 100svh;
+  display: flex;
+  align-items: center;
+}
+
+.tagline-text {
+  max-width: 1080px;
+  margin: 0 auto;
+  font-family: var(--font-grotesk), var(--font-geist), sans-serif;
+  font-size: clamp(32px, 6.4vw, 88px);
+  font-weight: 500;
+  line-height: 1.06;
+  letter-spacing: -1.5px;
+  text-align: center;
+  text-transform: uppercase;
+  color: rgba(31, 31, 31, 0.16);
 }
 
 /* ============ SCALING MEDIA (pinned scale-up) ============ */
@@ -931,102 +950,115 @@ button {
   }
 }
 
-/* ============ SERVICES LIST ("WHAT I DO") ============ */
+/* ============ SERVICES LIST ("WHAT I DO" accordion) ============ */
 
 .services-list {
   border-top: 1px solid var(--border);
 }
 
-.services-row {
+.services-item {
   position: relative;
-  display: flex;
-  align-items: baseline;
-  gap: var(--sp-6);
-  padding: var(--sp-7) 0;
   border-bottom: 1px solid var(--border);
-  transition: background 0.3s ease;
 }
 
-.services-row:hover {
-  background: var(--card);
+.services-row {
+  position: relative;
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  align-items: flex-start;
+  gap: var(--sp-5);
+  width: 100%;
+  padding: 26px 0 14px;
+  background: none;
+  text-align: left;
+  cursor: pointer;
 }
 
 .services-index {
-  flex-shrink: 0;
+  margin-top: -4px;
   font-family: var(--font-grotesk), sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   letter-spacing: 1px;
-  color: var(--muted);
+  color: var(--body-text);
 }
 
 .services-name {
-  flex: 1;
   min-width: 0;
   font-family: var(--font-grotesk), sans-serif;
-  font-size: clamp(24px, 4vw, 42px);
+  font-size: clamp(22px, 3.2vw, 36px);
   font-weight: 500;
-  letter-spacing: -0.5px;
+  letter-spacing: -0.4px;
   color: var(--fg);
+  transition: opacity 0.3s ease;
 }
 
-.services-badge {
-  flex-shrink: 0;
-  align-self: flex-start;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: var(--amber);
-  border: 1px solid var(--border-strong);
-  border-radius: 999px;
-  padding: 5px 12px;
+.services-item:not(.is-open) .services-name {
+  opacity: 0.5;
 }
 
 .services-details {
-  padding: 0 0 var(--sp-7);
-  border-bottom: 1px solid var(--border);
+  overflow: hidden;
 }
 
-.services-details:last-child {
-  border-bottom: none;
+.services-details-grid {
+  display: grid;
+  grid-template-columns: 76px 1fr;
+  gap: var(--sp-5);
+  padding-bottom: 30px;
+  /* Reserve the top-right corner for the pinned thumbnail so the text
+     column wraps before running under it. */
+  padding-right: clamp(200px, 25vw, 340px);
+  /* Same formula as .services-thumb's height — keeps every open row the
+     same size regardless of how much description text it holds, so the
+     thumbnail (pinned, out of flow) never overflows a short item's box. */
+  min-height: clamp(121px, 13.5vw, 200px);
 }
 
-.services-bullets {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
+.services-text {
+  min-width: 0;
   max-width: 640px;
+  color: var(--fg);
+  font-size: clamp(17px, 1.7vw, 20px);
+  line-height: 1.6;
 }
 
-.services-bullets li {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  color: var(--body-text);
-  font-size: clamp(15.5px, 1.4vw, 17px);
-  line-height: 1.55;
+/* Real photos aren't in yet (see DESIGN_DECISIONS.md) — plain white panel,
+   square corners, matching the reference's untreated photo crop. Pinned to
+   the item's top-right corner (level with the title), independent of the
+   text column's own height, instead of trailing below the paragraph. */
+.services-thumb {
+  position: absolute;
+  top: 26px;
+  right: 0;
+  width: clamp(176px, 22vw, 308px);
+  height: clamp(121px, 13.5vw, 200px);
+  background: #fff;
+  pointer-events: none;
 }
 
-.services-bullets .icon {
-  width: 16px;
-  height: 16px;
-  margin-top: 3px;
-  color: var(--amber);
-  flex-shrink: 0;
-}
-
-@media (max-width: 640px) {
-  .services-row {
-    flex-wrap: wrap;
-    gap: var(--sp-3);
+@media (max-width: 720px) {
+  .services-row,
+  .services-details-grid {
+    grid-template-columns: 1fr;
+    gap: var(--sp-2);
   }
 
-  .services-badge {
-    order: 3;
+  .services-index {
+    margin-top: 0;
+  }
+
+  .services-details-grid {
+    padding-right: 0;
+    min-height: 0;
+  }
+
+  .services-thumb {
+    position: static;
+    display: block;
     width: 100%;
+    height: 44vw;
+    max-height: 220px;
+    margin: 16px 0 4px;
   }
 }
 
@@ -1053,64 +1085,79 @@ button {
   margin-top: var(--sp-4);
 }
 
-.process-steps {
+/* Cards laid out like a fanned, dealt hand — each flies in from the side
+   and settles at a slight, alternating tilt (the reference site's "Pledge /
+   Turn / Prestige" step cards). */
+.process-card-grid {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: var(--sp-7) var(--sp-6);
+  padding-top: var(--sp-5);
+}
+
+.process-card {
+  background: #fff;
+  border-radius: 20px;
+  box-shadow: 0 22px 48px rgba(31, 31, 31, 0.14);
+  padding: 34px 30px;
+  width: clamp(230px, 23vw, 300px);
+  min-height: 380px;
   display: flex;
   flex-direction: column;
 }
 
-.process-step {
-  display: grid;
-  grid-template-columns: 90px 1fr;
-  gap: var(--sp-6);
-  padding: var(--sp-9) 0;
-  border-top: 1px solid var(--border);
-}
-
-.process-step:last-child {
-  border-bottom: 1px solid var(--border);
-}
-
-.process-step-index {
+.process-card-index {
   font-family: var(--font-grotesk), sans-serif;
-  font-size: 14px;
+  font-size: 11px;
+  font-weight: 700;
   letter-spacing: 1.5px;
-  color: var(--muted);
   text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 6px;
 }
 
-.process-step-body {
-  max-width: 720px;
-}
-
-.process-step-word {
-  display: block;
+.process-card-word {
   font-family: var(--font-fraunces), serif;
   font-style: italic;
   font-weight: 500;
-  color: var(--muted);
-  font-size: clamp(15px, 1.6vw, 18px);
-  margin-bottom: 8px;
+  color: #8a8683;
+  font-size: 14px;
+  margin-bottom: 10px;
 }
 
-.process-step-title {
+.process-card-title {
   font-family: var(--font-grotesk), sans-serif;
-  font-size: clamp(28px, 3.6vw, 46px);
+  font-size: clamp(22px, 2.2vw, 27px);
   font-weight: 500;
-  letter-spacing: -0.6px;
-  color: var(--fg);
-  margin-bottom: var(--sp-4);
+  letter-spacing: -0.4px;
+  color: var(--ink);
+  margin-bottom: 14px;
 }
 
-.process-step-text {
-  color: var(--body-text);
-  font-size: clamp(16px, 1.6vw, 19px);
+.process-card-text {
+  color: #57534f;
+  font-size: 14.5px;
   line-height: 1.6;
+  flex: 1;
+}
+
+.process-card .tag-row {
+  margin-top: var(--sp-5);
+}
+
+.process-card .tag-pill {
+  font-size: 10px;
+  padding: 5px 11px;
+  border-color: rgba(31, 31, 31, 0.18);
+  color: #6b6763;
 }
 
 @media (max-width: 640px) {
-  .process-step {
-    grid-template-columns: 1fr;
-    gap: var(--sp-3);
+  .process-card {
+    width: 100%;
+    min-height: 0;
+    transform: none !important;
   }
 }
 
@@ -1406,6 +1453,60 @@ button {
   opacity: 0.75;
 }
 
+/* ============ MARQUEE (infinite ticker) ============ */
+
+.marquee {
+  overflow: hidden;
+  white-space: nowrap;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  padding: var(--sp-5) 0;
+}
+
+.marquee-track {
+  display: inline-flex;
+  gap: 34px;
+  animation: marquee-scroll 28s linear infinite;
+}
+
+.marquee-set {
+  display: inline-flex;
+  align-items: center;
+  gap: 34px;
+}
+
+.marquee-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 34px;
+  font-family: var(--font-grotesk), sans-serif;
+  font-size: clamp(15px, 1.8vw, 21px);
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--fg);
+}
+
+.marquee-sep {
+  color: var(--amber);
+  font-size: 15px;
+}
+
+@keyframes marquee-scroll {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .marquee-track {
+    animation: none;
+  }
+}
+
 /* ============ VISUALLY HIDDEN (a11y) ============ */
 
 .sr-only {
@@ -1420,27 +1521,11 @@ button {
   border: 0;
 }
 
-/* ============ MOBILE PERFORMANCE ============ */
-
-@media (max-width: 640px) {
-  .hero-glow {
-    filter: blur(50px);
-  }
-
-  .hero-glow-a,
-  .hero-glow-b {
-    animation: none;
-  }
-}
-
 /* ============ REDUCED MOTION ============ */
 
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
-  }
-  .hero-scroll-cue-line {
-    animation: none;
   }
 }
 

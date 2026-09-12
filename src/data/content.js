@@ -31,13 +31,16 @@ export const navLinks = [
 ];
 
 export const hero = {
-  eyebrow: "Jedna subskrypcja. Kompletny wizerunek.",
   headingParts: ["Auto", "pilot"],
-  heading: "Autopilot",
+  // Big pinned statement further down the page (PinnedTagline.jsx) —
+  // separate from the hero's own tagline below.
   lead: "Dedykowany film, sesja zdjęciowa i strona internetowa Twojego biznesu.",
-  ctas: [
-    { label: "Zobacz ofertę", href: "#oferta", kind: "primary" },
-    { label: "Umów rozmowę", href: "#kontakt", kind: "secondary" },
+  // Sales-pitch line under the hero wordmark itself, replacing the old
+  // eyebrow/lead/CTA cluster — nbnzia's hero is wordmark-only, so the
+  // only text living inside Hero.jsx now is this one short statement.
+  tagline: [
+    "Twój biznes zasługuje na wizerunek, który działa sam.",
+    "My go zbudujemy — i ustawimy na autopilocie.",
   ],
 };
 
@@ -93,17 +96,19 @@ export const offer = {
   subtext: "Bez pakietów. Bez dopłat. Film, zdjęcia i strona — razem.",
   items: [
     {
-      badge: "Flagowa usługa",
       name: "Dedykowany Film Dokumentalny",
-      bullets: ["Twoja historia, opowiedziana od A do Z", "Kamera, scenariusz, montaż kinowy", "Co miesiąc nowe Shorts i Rolki"],
+      description:
+        "Kręcimy Twoją historię od pierwszego ujęcia po ostatnie cięcie — kamera, scenariusz i montaż kinowy w jednym pakiecie. Z tego samego materiału co miesiąc wycinamy nowe Shorts i Rolki, więc Twój kanał nigdy nie stoi w miejscu.",
     },
     {
       name: "Sesja Zdjęciowa",
-      bullets: ["Miejsce, zespół i usługi w kadrze", "Gotowe do strony i social media", "Spójny, kinowy styl"],
+      description:
+        "Fotografujemy Twoje miejsce, zespół i usługi w spójnym, kinowym stylu — gotowe od razu pod stronę WWW i social media, bez dodatkowej obróbki po Twojej stronie.",
     },
     {
       name: "Nowoczesna Strona WWW",
-      bullets: ["Zaprojektowana pod Twój biznes", "Film, zdjęcia i marka w jednym miejscu", "Pierwsze wrażenie, które konwertuje"],
+      description:
+        "Projektujemy stronę dopasowaną do Twojego biznesu, która spina film, zdjęcia i markę w jedną spójną całość — pierwsze wrażenie, które realnie zamienia odwiedzających w klientów.",
     },
   ],
   cta: { label: "Zamów Autopilota", href: "#kontakt" },

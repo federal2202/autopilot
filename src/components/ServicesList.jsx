@@ -1,9 +1,17 @@
+"use client";
+
+import { useState } from "react";
+import { AnimatePresence, m } from "framer-motion";
 import { offer } from "@/data/content";
-import { CheckIcon, ArrowIcon } from "./icons";
+import { ArrowIcon } from "./icons";
 import Reveal from "./Reveal";
 import Magnetic from "./Magnetic";
 
+const EASE = [0.65, 0, 0.35, 1];
+
 export default function ServicesList() {
+  const [openIndex, setOpenIndex] = useState(0);
+
   return (
     <section id="oferta" className="section section-black">
       <div className="container">
@@ -14,27 +22,56 @@ export default function ServicesList() {
         </div>
 
         <div className="services-list">
-          {offer.items.map((item, i) => (
-            <Reveal key={item.name} delay={i * 0.06} as="div">
-              <div className="services-row">
-                <span className="services-index" aria-hidden="true">
-                  [ 0{i + 1} ]
-                </span>
-                <h4 className="services-name">{item.name}</h4>
-                {item.badge && <span className="services-badge">{item.badge}</span>}
-              </div>
-              <div className="services-details">
-                <ul className="services-bullets">
-                  {item.bullets.map((bullet) => (
-                    <li key={bullet}>
-                      <CheckIcon />
-                      <span>{bullet}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            </Reveal>
-          ))}
+          {offer.items.map((item, i) => {
+            const isOpen = openIndex === i;
+            return (
+              <Reveal
+                key={item.name}
+                delay={i * 0.06}
+                as="div"
+                className={`services-item${isOpen ? " is-open" : ""}`}
+                onMouseEnter={() => setOpenIndex(i)}
+              >
+                <button
+                  type="button"
+                  className="services-row"
+                  aria-expanded={isOpen}
+                  onFocus={() => setOpenIndex(i)}
+                  onClick={() => setOpenIndex(i)}
+                >
+                  <span className="services-index" aria-hidden="true">
+                    [ 0{i + 1} ]
+                  </span>
+                  <h4 className="services-name">{item.name}</h4>
+                </button>
+
+                <m.div
+                  className="services-details"
+                  initial={false}
+                  animate={{ height: isOpen ? "auto" : 0 }}
+                  transition={{ duration: 0.45, ease: EASE }}
+                >
+                  <div className="services-details-grid">
+                    <span aria-hidden="true" />
+                    <p className="services-text">{item.description}</p>
+                  </div>
+                </m.div>
+
+                <AnimatePresence>
+                  {isOpen && (
+                    <m.span
+                      key="thumb"
+                      className="services-thumb"
+                      aria-hidden="true"
+                      initial={{ clipPath: "inset(0% 0% 100% 0%)" }}
+                      animate={{ clipPath: "inset(0% 0% 0% 0%)", transition: { duration: 0.55, delay: 0.15, ease: EASE } }}
+                      exit={{ clipPath: "inset(0% 0% 100% 0%)", transition: { duration: 0.35, ease: EASE } }}
+                    />
+                  )}
+                </AnimatePresence>
+              </Reveal>
+            );
+          })}
         </div>
 
         <Reveal delay={0.2} className="offer-cta-wrap">
