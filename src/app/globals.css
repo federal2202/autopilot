@@ -624,15 +624,14 @@ button {
      toggle) — without a transition here that flip is a hard, instant
      snap from opaque cream to see-through, which is its own "too abrupt"
      bug even though it fixed the z-index flash it replaced.
-     Was left at 0.4s when every other reveal (scrim, statement) got
-     slowed down on request — at 0.4s this was the fastest thing in the
-     whole sequence and the one triggered earliest (right as the photo's
-     own expand transition ends), so it read as a quick "flash" right
-     before the slower scrim/statement fades caught up. Matched to the
-     scrim's 1.4s for one consistent pace. Must stay <= the loader's own
-     framer-motion exit `duration` in Hero.jsx, or React unmounts the
-     element before this finishes and the reveal cuts off abruptly. */
-  transition: background 1.4s ease;
+     This duration is a coupled pair with Hero.jsx's `LOADER_BG_TRANSITION_MS`
+     (must match this value exactly) and, through that, with `REVEAL_DELAY`
+     and the loader's own framer-motion exit `duration` — see the comment
+     on `LOADER_BG_TRANSITION_MS` in Hero.jsx before changing this number.
+     Getting these out of sync either reopens the z-index-race flash
+     (Category 3 in ANIMATION-FLICKER-FRAMEWORK.md) or cuts this
+     transition off mid-fade. */
+  transition: background 0.6s ease;
   pointer-events: none;
 }
 

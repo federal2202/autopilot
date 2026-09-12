@@ -32,24 +32,23 @@ const EXPAND_DURATION = 950;
 // photo's geometry settle on its own first, silently, removes that
 // collision.
 // This also has to be at least as long as .hero-loader's own
-// `background` CSS transition (globals.css, currently 1.4s) — not just
-// "long enough to avoid the DOM-mount stutter" above. The frame's
-// z-index only drops from its explicit 1500 to auto once `phase` hits
-// "settled" (REVEAL_DELAY after settle() runs), and the loader still
-// carries an explicit z-index (1400) throughout its own exit. The
-// instant frame goes to auto, the loader — however far its background
-// has actually faded by then — wins the stacking race (explicit always
-// beats auto) and jumps back on top of the fullscreen photo. At the old
-// 180ms this was barely visible because the background transition was
-// only 0.4s back then (already ~45% faded by 180ms); lengthening that
-// transition to 1.4s without lengthening this delay to match reopened
-// the exact same z-index race from a near-fully-opaque state, which
-// read as a hard flash right before the (correctly slow) scrim/
-// statement fades took over. Keeping this >= that transition's duration
-// means the loader has nothing left to show by the time it could win
-// the race, so the race becomes harmless again — same fix pattern as
-// the original z-index bug, just re-applied to the new duration.
-const REVEAL_DELAY = 1450;
+// `background` CSS transition (LOADER_BG_TRANSITION_MS below, and the
+// matching value in globals.css) — not just "long enough to avoid the
+// DOM-mount stutter" above. The frame's z-index only drops from its
+// explicit 1500 to auto once `phase` hits "settled" (REVEAL_DELAY after
+// settle() runs), and the loader still carries an explicit z-index
+// (1400) throughout its own exit. The instant frame goes to auto, the
+// loader — however far its background has actually faded by then — wins
+// the stacking race (explicit always beats auto) and jumps back on top
+// of the fullscreen photo. Keeping this >= LOADER_BG_TRANSITION_MS means
+// the loader has nothing left to show by the time it could win that
+// race, so the race stays harmless. These two values (and the loader's
+// framer-motion exit duration just below) are a coupled set — change one
+// of the three, change all three, or the z-index flash comes back (see
+// ANIMATION-FLICKER-FRAMEWORK.md, Category 3's timing-relationship
+// note).
+const LOADER_BG_TRANSITION_MS = 600; // must match .hero-loader's `transition: background` in globals.css
+const REVEAL_DELAY = LOADER_BG_TRANSITION_MS + 50;
 // The statement text used to rely on mix-blend-mode for adaptive
 // contrast, which meant it could never be animated directly (opacity,
 // transform, anything) without breaking the blend — every attempt at a
@@ -57,11 +56,18 @@ const REVEAL_DELAY = 1450;
 // its own. Simplified away entirely: plain solid color, no blend, no
 // veil — which means it's finally safe to just fade it in normally.
 // Held back this long after `phase` hits "settled" so it doesn't land in
-// the same beat as the scrim/navbar reveal, then fades in slowly on its
-// own (see the .hero-statement transition below).
-const STATEMENT_DELAY = 400;
+// the same beat as the scrim/navbar reveal, then fades in on its own
+// (see the .hero-statement transition below).
+const STATEMENT_DELAY = 150;
+// Total time from mount to the moment the frame's z-index drops and the
+// navbar becomes physically uncoverable — exported so Navbar.jsx can
+// time its own slide-down-and-fade entrance to land at exactly that
+// instant, instead of just materializing in place the moment it's
+// uncovered.
+export const HERO_REVEAL_MS =
+  SPLIT_DELAY + SPLIT_DURATION + SLIDES.length * SLIDE_HOLD + EXPAND_HOLD + EXPAND_DURATION + REVEAL_DELAY;
 
-function prefersReducedMotion() {
+export function prefersReducedMotion() {
   return typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
@@ -239,7 +245,7 @@ export default function Hero() {
           aria-hidden="true"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 1.4, ease: EASE }}
+          transition={{ duration: 0.7, ease: EASE }}
         />
       )}
 
@@ -249,21 +255,21 @@ export default function Hero() {
           CSS transition is what's actually revealing the navbar, triggered
           by settle()'s synchronous style write) to finish, rather than
           being yanked out of the DOM mid-fade the instant `introVisible`
-          flips false. This exit `duration` must stay >= that CSS
-          transition's duration, or React unmounts the element before the
-          background finishes going transparent, which cuts the reveal off
-          abruptly — they're kept equal here so neither can undershoot the
-          other. The opacity fade itself is close to invisible in practice
-          (by the time it'd be noticeable, the background is already
-          transparent and the loader's own text is already faded via
-          `.is-faded`) — its job is timing, not appearance. */}
+          flips false. This exit `duration` must stay >= LOADER_BG_TRANSITION_MS
+          above, or React unmounts the element before the background
+          finishes going transparent, which cuts the reveal off abruptly —
+          kept equal to it here. The opacity fade itself is close to
+          invisible in practice (by the time it'd be noticeable, the
+          background is already transparent and the loader's own text is
+          already faded via `.is-faded`) — its job is timing, not
+          appearance. */}
       <AnimatePresence>
         {introVisible && (
           <m.div
             ref={loaderRef}
             className="hero-loader"
             exit={{ opacity: 0 }}
-            transition={{ duration: 1.4, ease: EASE }}
+            transition={{ duration: LOADER_BG_TRANSITION_MS / 1000, ease: EASE }}
           >
             <div className="hero-loader-row">
               <span className={`hero-loader-word${isFullscreen ? " is-faded" : ""}`}>
@@ -296,7 +302,7 @@ export default function Hero() {
                 className="hero-statement"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: showStatement ? 1 : 0 }}
-                transition={{ duration: 1.6, ease: EASE }}
+                transition={{ duration: 0.8, ease: EASE }}
               >
                 {hero.tagline.map((line) => (
                   <p key={line} className="hero-statement-line">

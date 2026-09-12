@@ -1,9 +1,13 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { m } from "framer-motion";
 import { navLinks } from "@/data/content";
 import { MenuIcon, CloseIcon } from "./icons";
 import Logo from "./Logo";
+import { HERO_REVEAL_MS, prefersReducedMotion } from "./Hero";
+
+const EASE = [0.65, 0, 0.35, 1];
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -23,8 +27,24 @@ export default function Navbar() {
     };
   }, [open]);
 
+  // Hidden behind the loader/photo (both explicit z-index, well above the
+  // navbar's own 999) for the whole Hero intro regardless of this
+  // animation's own state — but without motion of its own, the instant it
+  // stops being covered it would just materialize already fully formed,
+  // which read as an abrupt pop even though the *covering* mechanism
+  // (Hero.jsx's loader fade) is smooth. Timed to HERO_REVEAL_MS — the
+  // exact moment Hero.jsx uncovers it — so it slides down and fades in
+  // right as it becomes visible, instead of being static motion revealed
+  // by something else's fade.
+  const reduceMotion = prefersReducedMotion();
+
   return (
-    <header className={`navbar${scrolled ? " is-scrolled" : ""}`}>
+    <m.header
+      className={`navbar${scrolled ? " is-scrolled" : ""}`}
+      initial={reduceMotion ? false : { opacity: 0, y: -24 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={reduceMotion ? { duration: 0 } : { delay: HERO_REVEAL_MS / 1000, duration: 0.6, ease: EASE }}
+    >
       <div className="navbar-inner">
         <a href="#hero" className="navbar-logo">
           <Logo size={46} />
@@ -67,6 +87,6 @@ export default function Navbar() {
           </a>
         </div>
       </div>
-    </header>
+    </m.header>
   );
 }
