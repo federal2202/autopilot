@@ -26,7 +26,7 @@ export const contact = {
 export const navLinks = [
   { label: "Oferta", href: "#oferta" },
   { label: "Jak to działa", href: "#jak-to-dziala" },
-  { label: "Partnerzy", href: "#partnerzy" },
+  { label: "FAQ", href: "#faq" },
   { label: "Kontakt", href: "#kontakt" },
 ];
 
@@ -114,37 +114,39 @@ export const offer = {
   cta: { label: "Zamów Autopilota", href: "#kontakt" },
 };
 
-export const partners = {
-  eyebrow: "Km 160 — sojusznicy",
-  heading: "Partnerzy sprzętowi i lifestyle'owi",
-  subtext: "Ekipa, dzięki której każda produkcja wychodzi z warsztatu na najwyższym poziomie.",
-  list: [
+export const faq = {
+  eyebrow: "Zanim zaczniemy",
+  heading: "Częste pytania",
+  subtext: "Wszystko, co warto wiedzieć, zanim ustawisz swój biznes na autopilocie.",
+  items: [
     {
-      name: "PROZONE.RENT",
-      badge: "Partner sprzętowy",
-      logo: "/partners/prozone-rent.png",
-      description:
-        "Technologiczne serce naszego studia. Dzięki udostępnianym przez nich **profesjonalnym kamerom i mikrofonom**, każda nasza produkcja zyskuje kinową jakość.",
-      href: "https://prozone.rent",
-      cta: "Strona partnera",
+      question: "Czy mogę anulować subskrypcję w dowolnym momencie?",
+      answer:
+        "Tak. Subskrypcja jest miesięczna i możesz ją anulować w dowolnym momencie — bez umów długoterminowych i bez kar za rezygnację.",
     },
     {
-      name: "COFFEELAB",
-      badge: "Partner",
-      logo: "/partners/coffeelab.png",
-      description:
-        "Rzemieślnicza palarnia kawy specialty — dla nich, tak jak dla nas, liczy się **proces, pasja i dbałość o detal**.",
-      href: "https://coffeelab.pl",
-      cta: "Sklep partnera",
+      question: "Ile trwa pierwszy cykl produkcji?",
+      answer:
+        "Pierwszy film, sesja zdjęciowa i szkic strony są zwykle gotowe w ciągu 2–3 tygodni od dnia nagrania materiału.",
     },
     {
-      name: "INSPIRED by ID",
-      badge: "Partner",
-      logo: "/partners/id-logo.png",
-      description:
-        "Marka premium stawiająca na **jakość wykonania i ponadczasowy design** — wartości, które widać w każdej naszej produkcji.",
-      href: "https://www.inspiredbyid.com/",
-      cta: "Sklep partnera",
+      question: "Ile poprawek jest wliczonych w cenę?",
+      answer:
+        "Każdy projekt obejmuje dwie rundy poprawek — dopracowujemy montaż, zdjęcia i stronę, aż efekt Ci odpowiada.",
+    },
+    {
+      question: "Co jeśli materiał mi się nie spodoba?",
+      answer:
+        "Pracujemy na bieżąco z Twoim feedbackiem podczas montażu. Jeśli coś nie gra, poprawiamy to w ramach tej samej subskrypcji — nie zaczynasz od zera na dodatkowy koszt.",
+    },
+    {
+      question: "Czy potrzebuję własnej osoby na planie podczas nagrania?",
+      answer: "Nie. Nasza ekipa prowadzi cały dzień zdjęciowy od początku do końca — Ty po prostu prowadzisz swój biznes jak zwykle.",
+    },
+    {
+      question: "Dla kogo to nie jest dobre rozwiązanie?",
+      answer:
+        "Jeśli szukasz jednorazowej sesji bez regularnych nowych materiałów, lepiej sprawdzi się zwykłe zlecenie. Autopilot jest dla biznesów, które chcą stałego dopływu treści co miesiąc.",
     },
   ],
 };

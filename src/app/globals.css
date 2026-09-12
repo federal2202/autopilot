@@ -1160,102 +1160,68 @@ button {
   }
 }
 
-/* ============ CASE / PARTNERS LIST ============ */
+/* ============ FAQ ACCORDION ============ */
 
-.case-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.case-row {
-  position: relative;
-  display: grid;
-  grid-template-columns: 90px 1fr;
-  gap: var(--sp-6);
-  padding: var(--sp-9) 0;
+.faq-list {
   border-top: 1px solid var(--border);
-  transition: background 0.3s ease;
+  max-width: 860px;
+  margin: 0 auto;
 }
 
-.case-row:last-child {
+.faq-item {
   border-bottom: 1px solid var(--border);
 }
 
-.case-row:hover {
-  background: var(--card);
-}
-
-.case-index {
-  font-family: var(--font-grotesk), sans-serif;
-  font-size: 14px;
-  letter-spacing: 1.5px;
-  color: var(--muted);
-}
-
-.case-body {
-  max-width: 760px;
-}
-
-.case-header {
+.faq-row {
   display: flex;
   align-items: center;
-  gap: 16px;
-  margin-bottom: var(--sp-4);
+  justify-content: space-between;
+  gap: var(--sp-5);
+  width: 100%;
+  padding: 26px 0;
+  background: none;
+  text-align: left;
+  cursor: pointer;
 }
 
-.case-icon {
-  width: 52px;
-  height: 52px;
+.faq-question {
+  min-width: 0;
+  font-family: var(--font-grotesk), sans-serif;
+  font-size: clamp(18px, 2vw, 22px);
+  font-weight: 500;
+  letter-spacing: -0.2px;
+  color: var(--fg);
+}
+
+.faq-toggle {
   flex-shrink: 0;
-  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  color: var(--fg);
+  transition: transform 0.4s cubic-bezier(0.65, 0, 0.35, 1), background 0.3s ease;
+}
+
+.faq-item.is-open .faq-toggle {
+  transform: rotate(135deg);
+  background: var(--fg);
+  color: var(--bg);
+}
+
+.faq-details {
   overflow: hidden;
-  background: #fff;
-  padding: 7px;
 }
 
-.case-icon-img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  filter: grayscale(1) contrast(1.05);
-}
-
-.case-name {
-  font-family: var(--font-grotesk), sans-serif;
-  font-size: clamp(24px, 3.4vw, 36px);
-  font-weight: 500;
-  letter-spacing: -0.4px;
-  color: var(--fg);
-}
-
-.case-badge {
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 1.2px;
-  text-transform: uppercase;
-  color: var(--muted);
-  margin-bottom: 4px;
-}
-
-.case-description {
+.faq-answer {
+  max-width: 700px;
+  padding-bottom: 26px;
   color: var(--body-text);
-  line-height: 1.65;
   font-size: clamp(15.5px, 1.4vw, 17px);
-  margin-bottom: var(--sp-5);
-}
-
-.case-cta {
-  font-size: 13px;
-  font-weight: 700;
-  letter-spacing: 0.5px;
-  text-transform: uppercase;
-  color: var(--fg);
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
+  line-height: 1.65;
 }
 
 @media (max-width: 640px) {

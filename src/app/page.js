@@ -6,7 +6,7 @@ import Intro from "@/components/Intro";
 import ScalingMedia from "@/components/ScalingMedia";
 import ServicesList from "@/components/ServicesList";
 import ProcessSteps from "@/components/ProcessSteps";
-import Partners from "@/components/Partners";
+import Faq from "@/components/Faq";
 import Closing from "@/components/Closing";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
@@ -23,7 +23,7 @@ export default function Home() {
         <ScalingMedia />
         <ServicesList />
         <ProcessSteps />
-        <Partners />
+        <Faq />
         <Closing />
         <Contact />
       </main>
