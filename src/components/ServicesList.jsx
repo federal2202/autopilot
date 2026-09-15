@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { AnimatePresence, m } from "framer-motion";
 import { offer } from "@/data/content";
 import { ArrowIcon } from "./icons";
@@ -11,20 +11,6 @@ const EASE = [0.65, 0, 0.35, 1];
 
 export default function ServicesList() {
   const [openIndex, setOpenIndex] = useState(0);
-  const closeTimerRef = useRef(null);
-
-  function selectItem(i) {
-    if (i === openIndex) return;
-    if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-    setOpenIndex(null);
-    closeTimerRef.current = setTimeout(() => setOpenIndex(i), 450);
-  }
-
-  useEffect(() => {
-    return () => {
-      if (closeTimerRef.current) clearTimeout(closeTimerRef.current);
-    };
-  }, []);
 
   return (
     <section id="oferta" className="section section-black">
@@ -44,14 +30,15 @@ export default function ServicesList() {
                 delay={i * 0.06}
                 as="div"
                 className={`services-item${isOpen ? " is-open" : ""}`}
-                onMouseEnter={() => selectItem(i)}
+                onMouseEnter={() => setOpenIndex(i)}
+                layout="position"
               >
                 <button
                   type="button"
                   className="services-row"
                   aria-expanded={isOpen}
-                  onFocus={() => selectItem(i)}
-                  onClick={() => selectItem(i)}
+                  onFocus={() => setOpenIndex(i)}
+                  onClick={() => setOpenIndex(i)}
                 >
                   <span className="services-index" aria-hidden="true">
                     [ 0{i + 1} ]

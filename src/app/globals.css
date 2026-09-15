@@ -848,12 +848,21 @@ button {
   }
 
   .hero-visual-frame.is-open {
+    /* Square, not the viewport's own portrait ratio (~0.46 via
+       --vp-ratio) — sized to sit inline with the text like a big
+       glyph, not shaped like a sliver of the phone screen. The base
+       rule's `aspect-ratio: var(--vp-ratio, 1.5)` is what the *expand*
+       transition actually needs (see Hero.jsx's `phase === "expand"`
+       effect, which snaps this back to --vp-ratio the instant that
+       phase starts, before capturing the FLIP's starting rect) — this
+       override only applies to the small merged/slides phases. */
     width: auto;
     height: clamp(56px, 11vh, 96px);
+    aspect-ratio: 1;
   }
 
   .hero-loader-gap.is-open {
-    width: clamp(26px, 5vh, 44px);
+    width: clamp(56px, 11vh, 96px);
     margin: 0 clamp(8px, 2vw, 16px);
   }
 }

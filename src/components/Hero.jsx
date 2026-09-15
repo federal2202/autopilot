@@ -18,7 +18,28 @@ const [headA, headB] = hero.headingParts;
 // fixed fullscreen layer without a jump cut.
 const SLIDES = ["/pc5.JPG", "/pc4.JPG", "/stas.JPG"];
 const SLIDE_HOLD = 420;
-const SPLIT_DELAY = 550;
+
+// Kinetic letter-reveal timing, in ms (KineticText's own props take
+// seconds — divided by 1000 below wherever they're actually passed to
+// it) — named here, rather than left as inline literals only, so
+// SPLIT_DELAY can be derived from the same numbers instead of an
+// independently-guessed constant that silently drifts out of sync with
+// how long "AUTOPILOT" actually takes to finish writing on.
+const KINETIC_BASE_DELAY_MS = 100;
+const KINETIC_STAGGER_MS = 45;
+const KINETIC_WORD_GAP_MS = 100;
+const KINETIC_LETTER_DURATION_MS = 750; // matches KineticText.jsx's own fixed 0.75s duration
+const headBBaseDelayMs = KINETIC_BASE_DELAY_MS + headA.length * KINETIC_STAGGER_MS + KINETIC_WORD_GAP_MS;
+const headARevealEndMs = KINETIC_BASE_DELAY_MS + (headA.length - 1) * KINETIC_STAGGER_MS + KINETIC_LETTER_DURATION_MS;
+const headBRevealEndMs = headBBaseDelayMs + (headB.length - 1) * KINETIC_STAGGER_MS + KINETIC_LETTER_DURATION_MS;
+// The split (and the small preview frame appearing in the gap) must not
+// start until "AUTOPILOT" has actually finished writing on — otherwise
+// the frame/photo shows up while letters are still rising into place,
+// which reads as "the photo appeared before the text." Whichever word
+// settles later, plus a brief settled pause, rather than a guessed
+// constant (550ms — well before either word actually finished).
+const SETTLE_PAUSE_MS = 150;
+const SPLIT_DELAY = Math.max(headARevealEndMs, headBRevealEndMs) + SETTLE_PAUSE_MS;
 const SPLIT_DURATION = 700;
 const EXPAND_HOLD = 550;
 const EXPAND_DURATION = 950;
@@ -125,6 +146,24 @@ export default function Hero() {
     if (phase !== "expand") return;
     const el = frameRef.current;
     if (!el) return;
+
+    // On mobile the merged/slides phases show a small SQUARE preview
+    // (the "@media (max-width: 640px)" override in globals.css) instead
+    // of --vp-ratio's shape, so it reads as sitting inline with the text
+    // rather than a sliver of the phone screen. But the FLIP below grows
+    // into 100vw x 100dvh (the viewport's own ratio) by transitioning
+    // width/height independently, which only avoids re-cropping the
+    // photo *throughout* that transition if the box's ratio is constant
+    // the whole time (see the long comment on the base .hero-visual-frame
+    // rule) — starting the FLIP from a square rect would instead drift
+    // the crop continuously across the whole ~1s expand. Snapping the
+    // shape back to --vp-ratio synchronously, right here before the
+    // starting rect is measured, trades that sustained drift for one
+    // instant shape pop at the exact moment the expand kicks off (already
+    // a big, fast, attention-grabbing motion) — far less noticeable than
+    // a full second of visible re-cropping.
+    el.style.aspectRatio = "var(--vp-ratio, 1.5)";
+    void el.offsetWidth;
 
     const rect = el.getBoundingClientRect();
     el.style.transition = "none";
@@ -273,11 +312,11 @@ export default function Hero() {
           >
             <div className="hero-loader-row">
               <span className={`hero-loader-word${isFullscreen ? " is-faded" : ""}`}>
-                <KineticText text={headA} baseDelay={0.1} stagger={0.045} />
+                <KineticText text={headA} baseDelay={KINETIC_BASE_DELAY_MS / 1000} stagger={KINETIC_STAGGER_MS / 1000} />
               </span>
               <span className={`hero-loader-gap${phase !== "merged" ? " is-open" : ""}`} aria-hidden="true" />
               <span className={`hero-loader-word${isFullscreen ? " is-faded" : ""}`}>
-                <KineticText text={headB} baseDelay={0.1 + headA.length * 0.045 + 0.1} stagger={0.045} />
+                <KineticText text={headB} baseDelay={headBBaseDelayMs / 1000} stagger={KINETIC_STAGGER_MS / 1000} />
               </span>
             </div>
           </m.div>
