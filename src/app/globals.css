@@ -848,11 +848,12 @@ button {
   }
 
   .hero-visual-frame.is-open {
-    width: clamp(150px, 60vw, 260px);
+    width: auto;
+    height: clamp(56px, 11vh, 96px);
   }
 
   .hero-loader-gap.is-open {
-    width: clamp(150px, 60vw, 260px);
+    width: clamp(26px, 5vh, 44px);
     margin: 0 clamp(8px, 2vw, 16px);
   }
 }
@@ -979,6 +980,15 @@ button {
   aspect-ratio: 16 / 9;
 }
 
+@media (max-width: 860px) {
+  /* Below the breakpoint where Showreel.jsx's grow-from-slot effect is
+     disabled (see that file), nothing ever chases this slot — it would
+     otherwise just sit here as a pointless empty gap. */
+  .intro-media-frame {
+    display: none;
+  }
+}
+
 /* Close under the statement text, not a whole separate row further
    down — the reference's CTAs sit right beneath the last line of copy. */
 .intro-ctas {
@@ -990,6 +1000,19 @@ button {
      roughly 60% of the paragraph's own height, not a tight ~28px), so
      that read as cramped rather than "close." */
   margin-top: var(--sp-10);
+}
+
+@media (max-width: 640px) {
+  /* Two full-width, equal-size stacked buttons on narrow phones, instead
+     of each sizing to its own content and wrapping unevenly. */
+  .intro-ctas {
+    flex-direction: column;
+  }
+
+  .intro-ctas .btn {
+    width: 100%;
+    justify-content: center;
+  }
 }
 
 /* ============ SHOWREEL (video's natural size — see Showreel.jsx) ============ */
@@ -1097,10 +1120,6 @@ section.showreel-section {
   transition: opacity 0.3s ease;
 }
 
-.services-item:not(.is-open) .services-name {
-  opacity: 0.5;
-}
-
 .services-details {
   overflow: hidden;
 }
@@ -1146,7 +1165,7 @@ section.showreel-section {
   .services-row,
   .services-details-grid {
     grid-template-columns: 1fr;
-    gap: var(--sp-2);
+    gap: var(--sp-4);
   }
 
   .services-index {

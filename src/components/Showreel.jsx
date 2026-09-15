@@ -49,6 +49,13 @@ export default function Showreel() {
 
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    // Below Intro.jsx's own .intro-grid breakpoint (globals.css), the fixed-
+    // position grow-then-park illusion reads as the video overlapping the
+    // about text while it's still being read — skip it entirely so the
+    // video just renders at its plain, already-correctly-ordered static
+    // size/position (.showreel-box/.showreel-video), no inline styles ever
+    // applied.
+    if (window.matchMedia("(max-width: 860px)").matches) return;
 
     const video = videoRef.current;
     const bigBox = boxRef.current;
@@ -56,6 +63,11 @@ export default function Showreel() {
     if (!video || !bigBox || !smallSlot) return;
 
     let rafId = null;
+    // Frame-to-frame exponential smoothing state (same technique as
+    // CustomCursor.jsx's ring), applied on top of the eased target below —
+    // keeps the growth reading as fluid rather than snapping 1:1 to the
+    // scroll-derived target every frame.
+    let curX = null, curY = null, curW = null, curH = null;
 
     function render() {
       const smallRect = smallSlot.getBoundingClientRect();
@@ -80,10 +92,14 @@ export default function Showreel() {
       const growthDistance = window.innerHeight * 0.6;
       const remaining = smallRect.bottom;
       const sizeProgress = clamp((growthDistance - remaining) / growthDistance, 0, 1);
+      // Cubic ease-out on the growth curve itself — only feeds the x/w/h/
+      // growthY lerps below; the `sizeProgress < 1 ? ... : pinnedY` branch
+      // condition further down still keys off the raw, linear value.
+      const eased = 1 - Math.pow(1 - sizeProgress, 3);
 
-      const x = lerp(smallRect.left, bigRect.left, sizeProgress);
-      const w = lerp(smallRect.width, bigRect.width, sizeProgress);
-      const h = lerp(smallRect.height, bigRect.height, sizeProgress);
+      const x = lerp(smallRect.left, bigRect.left, eased);
+      const w = lerp(smallRect.width, bigRect.width, eased);
+      const h = lerp(smallRect.height, bigRect.height, eased);
 
       // Once fully grown, don't just keep tracking the big box's live
       // position — it's likely still well below the viewport at this
@@ -115,15 +131,27 @@ export default function Showreel() {
       // the box naturally is" at *every* frame, not just after growth
       // completes, means release can happen mid-growth if the box gets
       // there first, and there's never a frame where the two disagree.
-      const growthY = sizeProgress < 1 ? lerp(smallStartY, pinnedY, sizeProgress) : pinnedY;
+      const growthY = sizeProgress < 1 ? lerp(smallStartY, pinnedY, eased) : pinnedY;
       const y = Math.min(growthY, bigRect.top);
+
+      if (curX === null) {
+        curX = x;
+        curY = y;
+        curW = w;
+        curH = h;
+      } else {
+        curX += (x - curX) * 0.18;
+        curY += (y - curY) * 0.18;
+        curW += (w - curW) * 0.18;
+        curH += (h - curH) * 0.18;
+      }
 
       video.style.position = "fixed";
       video.style.margin = "0";
-      video.style.left = `${x}px`;
-      video.style.top = `${y}px`;
-      video.style.width = `${w}px`;
-      video.style.height = `${h}px`;
+      video.style.left = `${curX}px`;
+      video.style.top = `${curY}px`;
+      video.style.width = `${curW}px`;
+      video.style.height = `${curH}px`;
 
       rafId = requestAnimationFrame(render);
     }
@@ -138,6 +166,7 @@ export default function Showreel() {
 
     return () => {
       if (rafId) cancelAnimationFrame(rafId);
+      curX = curY = curW = curH = null;
       video.style.position = "";
       video.style.margin = "";
       video.style.left = "";
