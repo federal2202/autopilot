@@ -317,6 +317,275 @@ must stay >= the CSS transition's duration, or the element gets removed
 from the DOM mid-transition and the reveal cuts off abruptly. Keep them
 equal, and change them together going forward.
 
+## Category 8 — a GSAP Flip (or any cross-section reposition) goes invisible, not broken
+
+**Symptom:** an element animated with GSAP Flip (or any technique that
+positions an element far outside its own DOM parent's box — `position:
+absolute`/`fixed` with a large offset, a large `transform: translate`,
+etc.) simply doesn't render at all. No console error, no layout
+exception — `getBoundingClientRect()` on the element reports exactly the
+position you expect, but nothing paints there.
+
+**Cause:** any ancestor between the element and the document root with
+`overflow: hidden` (or `clip`/`scroll` without explicit visible bounds)
+clips it, and clipping is invisible in the geometry — `getBoundingClientRect`
+reports the mathematically correct box regardless of whether that box
+is actually painted. A "correctly positioned but invisible" element is
+easy to misdiagnose as a JS logic bug (wrong element, animation never
+ran, wrong plugin registered) when it's actually a plain CSS clipping
+issue one or two ancestors up. This bites GSAP Flip specifically because
+Flip's whole technique is "make the element temporarily look like it's
+somewhere else" — the "somewhere else" is very often outside the
+nearest `overflow: hidden` container, especially crossing between two
+different sections of a page (each of which may independently have
+`overflow: hidden` as a common defensive reset).
+
+**How to misdiagnose it:** assuming a black/blank result means the
+source (video, image, canvas) failed to load, or that the animation
+library never initialized. Check the geometry first — if
+`getBoundingClientRect()` on the animated element matches where you
+expect it to be, the positioning logic is working and the problem is
+purely a paint/clipping one.
+
+**Fix pattern:** walk the element's ancestor chain
+(`el.parentElement` repeatedly) checking `getComputedStyle(ancestor).overflow`
+until you reach `<html>`, and any ancestor that isn't `visible` is a
+suspect. Remove or override `overflow: hidden` on the specific
+ancestors involved — scoped narrowly (a combined selector like
+`section.my-specific-section { overflow: visible; }`, not editing a
+shared utility class used by unrelated elements elsewhere) — rather than
+disabling it globally. Check the element's *own* final resting state
+first: if it's sized to exactly fill its container in its natural
+(non-animated) state, the container's `overflow: hidden` was likely
+just a defensive default that was never actually load-bearing, and
+removing it costs nothing.
+
+```js
+function clippingAncestors(el) {
+  const chain = [];
+  for (let cur = el.parentElement; cur; cur = cur.parentElement) {
+    if (getComputedStyle(cur).overflow !== "visible") chain.push(cur);
+  }
+  return chain; // anything here is a suspect
+}
+```
+
+## Category 9 — `Flip.from(state, { targets })` silently no-ops on two different elements
+
+**Symptom:** you use GSAP Flip's documented "apply a recorded state to a
+*different* target" pattern — `Flip.from(state, { targets: otherEl })`
+— to animate element B into looking like element A used to, then to its
+own natural position. No error. `ScrollTrigger` reports correct
+`progress` values as you scroll. But the target element never visibly
+moves or resizes at all — it just sits at its natural position/size the
+entire time, in both directions.
+
+**Cause:** internally, Flip matches elements between the "from" state
+and the "to" state purely by a `data-flip-id` attribute — falling back
+to a *globally incrementing* auto-id (`"auto-" + counter`, written back
+onto the element as a real attribute) for any element that doesn't
+already have one. If `state` was captured from element A and `targets`
+points at element B, and neither had an explicit `data-flip-id` before,
+they get two *different* auto-ids the first time Flip touches them — the
+id lookup that's supposed to pair "A's recorded geometry" with "B, the
+thing to animate" never matches anything, so Flip treats B as a
+brand-new element entering with no "from" state, and produces a
+same-state, zero-duration animation. This is invisible from the outside
+because every symptom of success is present except the one that
+matters: `ScrollTrigger.progress` still updates correctly (it's just
+scrubbing an animation that does nothing).
+
+**How to misdiagnose it:** assuming the problem is scroll-mechanics
+related (wrong `start`/`end`, `scrub` not wired up, `document.hidden`
+throttling) because progress reads correctly and there's no error to
+chase. Check the animation itself, not the trigger: `const anim =
+Flip.from(...); console.log(anim.duration())`. A duration of `0` means
+Flip found nothing to animate between the two states — that's a
+matching problem, not a scroll-trigger problem, no matter how correct
+the `ScrollTrigger` setup looks.
+
+**Fix pattern:** give both elements the *same* explicit `data-flip-id`
+(any stable string) before calling `Flip.getState`/`Flip.from` — this is
+mandatory whenever "from" and "to" refer to two genuinely different DOM
+elements (as opposed to the same element before/after a layout change,
+Flip's more common use case, where matching isn't an issue since there's
+only one element to auto-id).
+
+```html
+<!-- both elements, wherever they live in the DOM: -->
+<div data-flip-id="my-thing"></div>   <!-- state captured from this -->
+<video data-flip-id="my-thing"></video>  <!-- animated via { targets: this } -->
+```
+
+## Category 10 — a Flip + ScrollTrigger set up on mount goes stale before layout settles
+
+**Symptom:** a GSAP Flip animation driven by a scrubbed `ScrollTrigger`,
+set up once in a mount effect, works correctly right after you fix
+Category 9 — until an unrelated layout change elsewhere on the page
+(bigger text, a wider container, anything that shifts where things sit)
+and it stops applying its initial "fitted" look entirely. The element
+just sits at its natural position/size with an empty `style=""`
+attribute, as if Flip never ran — no console error anywhere. Scrolling,
+resizing, or otherwise forcing a `ScrollTrigger.refresh()` can *also*
+make an already-working one suddenly revert to the unfitted state after
+a refresh, with the DOM's inline `style` attribute visibly going from a
+correct fitted transform back to empty.
+
+**Cause:** the Flip/ScrollTrigger setup runs once, synchronously, in a
+mount effect — but real pages keep shifting layout for a beat after
+that: web fonts swapping in, text reflowing, a video's metadata loading
+and affecting box sizes. Whatever `Flip.getState()` and
+`ScrollTrigger`'s start/end measured at effect-run time can go stale
+almost immediately, and nothing forces a second look unless something
+calls `refresh()`. Separately, even a `refresh()` call doesn't
+guarantee a re-render: refresh's remeasurement pass often needs to
+briefly clear a Flip'd element's style overrides to find its *true*
+natural bounds, and if the recalculated `progress` number comes out
+unchanged (e.g. `0 -> 0`, because scroll position didn't move), GSAP has
+no reason to think anything needs re-rendering — leaving the
+just-cleared, unfitted state as the final visible result.
+
+**How to misdiagnose it:** assuming this is the same Category 9 problem
+recurring (check `.duration()` again — it'll report a valid non-zero
+number, since the Flip pairing itself is fine) or assuming it's random
+flakiness because it only shows up after *other*, seemingly unrelated
+changes (a font size bump, a container width change) — the trigger is
+always the same: something shifted layout after the initial measurement.
+
+**Fix pattern:** two additions, not one — they cover different moments.
+1. Call `ScrollTrigger.refresh()` once, right after creating the
+   trigger, to re-measure after the current tick's layout has had a
+   chance to apply.
+2. Add `onRefresh: (self) => self.animation.progress(self.progress)` to
+   the `scrollTrigger` config, so *every* refresh — the one you just
+   added, or an automatic one from a later window resize — re-renders
+   the DOM to match whatever progress the trigger is actually at,
+   instead of occasionally leaving the remeasurement pass's cleared
+   state on screen.
+
+```js
+ScrollTrigger.create({
+  // ...
+  onRefresh: (self) => self.animation.progress(self.progress),
+});
+// right after setting up all your triggers for this mount:
+ScrollTrigger.refresh();
+```
+
+**One `refresh()` still isn't the whole fix if the layout-shifting cause
+is asynchronous** — web fonts are the classic case. `font-display: swap`
+(what most web-font setups, including `next/font`, use by default)
+paints with a fallback font first and swaps the real one in whenever it
+finishes downloading — which reflows any text-driven layout *after*
+your one synchronous `refresh()` call already ran, on a slow or
+cold-cache load, but *before* it on a fast/cached one. Same code, two
+different measured layouts, purely depending on network timing that
+varies between loads — this is what "works on some loads, not others"
+actually looks like from the outside. Fix: refresh again once fonts are
+verifiably done, not just once immediately —
+
+```js
+ScrollTrigger.refresh(); // immediate — covers the fast/cached case
+document.fonts.ready.then(() => ScrollTrigger.refresh()); // covers the slow case
+// belt-and-suspenders for anything else still settling (images, media metadata):
+if (document.readyState === "complete") {
+  ScrollTrigger.refresh();
+} else {
+  window.addEventListener("load", () => ScrollTrigger.refresh(), { once: true });
+}
+```
+
+— all safe to call more than once now that `onRefresh` (above) makes
+every refresh re-render correctly regardless of how many others already
+ran. Note the `readyState` check on the `load` listener: that event can
+easily have already fired by the time a mount effect runs, and a
+listener attached after the fact never gets called.
+
+## Category 11 — when a cache-and-refresh fix keeps needing "one more event," the cache itself is the bug
+
+**Symptom:** a scroll-linked animation (GSAP Flip, a scrubbed
+`ScrollTrigger`, or any effect that measures layout once and reuses the
+measurement) keeps behaving differently load-to-load even after fixing
+Categories 9 and 10 — `refresh()` on mount, `onRefresh` forcing a
+re-render, `document.fonts.ready` and `window.load` refresh calls all in
+place. It still occasionally lands in the wrong spot, or — worse — the
+element appears instantly at its *natural*, unfitted position/size on
+load, then visibly jumps to the correct fitted state and back once
+scrolling reaches it.
+
+**Cause:** every fix in Category 10 shares the same shape — measure
+geometry once, cache it, and add one more event listener that
+re-measures and patches the cache when that specific thing happens.
+That approach is only ever as complete as the list of events you
+thought to cover. A web font swap, a sibling component's own async GSAP
+setup nudging spacing, a browser extension injecting something, image
+metadata resolving late — anything not already on the list leaves the
+cached geometry stale until some unrelated scroll/resize event happens
+to force a correction. Enumerating every possible invalidation trigger
+is a losing game; there's always another one.
+
+**Fix pattern:** stop caching. If the animation's cost allows it (a
+`getBoundingClientRect()` call or two, not an expensive layout pass),
+re-measure everything fresh on *every* animation frame via a plain
+`requestAnimationFrame` loop instead of a scrubbed `ScrollTrigger` built
+on a one-time (or even repeatedly-refreshed) measurement:
+
+```js
+function render() {
+  const a = elA.getBoundingClientRect();
+  const b = elB.getBoundingClientRect();
+  // compute and apply this frame's position/size directly from a/b —
+  // nothing here was computed on a previous tick or before this call
+  target.style.left = `${lerp(a.left, b.left, progress)}px`;
+  // ...
+  requestAnimationFrame(render);
+}
+render(); // call synchronously once before the self-scheduling loop —
+          // see the tooling-gotcha note below on why a scheduled-only
+          // first call can matter
+```
+
+There is no cache to invalidate because nothing survives past the
+current frame — whatever the layout actually is *right now* is what
+gets read, roughly every 16ms, so a shift from any cause (including
+ones you never thought to name) shows up correctly on the very next
+frame. This trades a small constant per-frame cost for eliminating an
+entire class of "works on some loads, not others" bugs outright; for a
+single scroll-driven element (not dozens), the cost is negligible.
+
+Two sub-lessons that surfaced building a "quick growth, then pin until
+a natural position catches up" effect this way, both worth generalizing
+beyond this specific feature:
+
+- **Don't interpolate from a live/current value that itself keeps
+  moving as a side effect of the thing driving the interpolation.**
+  Once scrolled past a trigger point, that trigger element's own
+  `getBoundingClientRect()` position keeps receding (e.g. becoming more
+  negative) the further you scroll — using it directly as a lerp source
+  makes the animated element chase a moving target instead of settling.
+  Derive a scroll-invariant substitute instead: "where would this value
+  have been at the exact instant the trigger condition became true" is
+  usually a fixed expression (e.g. `top === -height` at the instant
+  `bottom === 0`), not something that needs to be sampled live — but
+  only *after* that instant; before it, the live value is still correct
+  and must be used, so branch on the trigger condition itself, not on
+  time.
+- **Combine adjacent phases into one continuous expression instead of
+  an `if`-branch keyed on a threshold.** A branch like `phase < 1 ?
+  animate() : parkedOrReleased()` silently assumes the two phases' own
+  crossover happens exactly when the branch's threshold does. On a
+  short enough gap between the trigger and the resting position, the
+  "resting" value can overtake the "still animating" value's curve
+  *before* the branch condition flips, producing a real jump right at
+  the boundary once it finally does. Instead, compute both phases' values
+  unconditionally every frame and combine them with something like
+  `Math.min(...)`/`Math.max(...)` (pick whichever direction represents
+  "whichever gets there first wins") — there is then no boundary where
+  behavior switches out from under the two curves, because both are
+  always being evaluated and the combinator picks the correct one at
+  every single frame, including ones where the naive threshold would
+  have picked wrong.
+
 ## Tooling gotcha: don't trust automated-browser timing tests blindly
 
 If you're debugging this kind of issue with a browser-automation tool
@@ -380,6 +649,40 @@ When something "flickers" during an animated transition:
    plain style mutation with its own CSS transition that the pass
    missed, possibly paired with an unrelated JS animation whose only job
    is to keep it mounted long enough.
-10. Testing via browser automation and everything "looks right" but the
+10. An element positioned far outside its own DOM parent (GSAP Flip,
+    a big `position: absolute`/`fixed` offset) renders nothing at all,
+    with no console error? → Category 8. Check `getBoundingClientRect()`
+    first — if the geometry is correct, walk the ancestor chain for the
+    `overflow: hidden` container that's clipping the paint.
+11. A GSAP `Flip.from(state, { targets })` between two different
+    elements has correct `ScrollTrigger` progress but the target never
+    visibly moves? → Category 9. Check `Flip.from(...).duration()` — `0`
+    means Flip never matched the two elements (no shared `data-flip-id`),
+    not a scroll-trigger problem.
+12. A working Flip + ScrollTrigger stops applying its fitted look after
+    an unrelated layout change (bigger text, a wider container), leaving
+    an empty `style=""` and no error? → Category 10. Add
+    `ScrollTrigger.refresh()` after setup and an `onRefresh` handler that
+    force-renders the current progress — one without the other isn't
+    enough.
+13. Testing via browser automation and everything "looks right" but the
     real user still sees it? Check `document.hidden` in that tab before
     trusting the test.
+14. Already fixed a stale-measurement bug (Category 10) by adding a
+    `refresh()`/re-measure call for one specific event, and it keeps
+    coming back for a *different* triggering event each time? → Category
+    11. Stop enumerating events one at a time — replace the cached
+    measurement with a live `requestAnimationFrame` loop that
+    re-measures from scratch every frame instead.
+15. A scroll-driven value interpolates toward a fixed target but never
+    actually arrives, or overshoots wildly, once scrolled past some
+    trigger point? → Category 11's "moving target" sub-lesson. Check
+    whether the interpolation source is a live `getBoundingClientRect()`
+    read of an element that itself keeps moving as you keep scrolling,
+    instead of a scroll-invariant derived constant.
+16. Two adjacent animation phases (e.g. "growing" then "pinned") produce
+    a visible snap right where an `if (progress < 1)`-style branch
+    switches from one to the other? → Category 11's "unify phases"
+    sub-lesson. Replace the branch with both phases computed every
+    frame and combined via `Math.min`/`Math.max`, so there's no
+    threshold where the two curves can disagree.

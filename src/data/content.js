@@ -50,6 +50,8 @@ export const intro = {
   stats: ["Jedna subskrypcja.", "Film. Sesja. Strona.", "Zero dopłat.", "Co miesiąc nowe materiały."],
   about:
     "AR Autopilot tworzy dla Twojego biznesu dedykowany film dokumentalny, montuje z niego Shorts i Rolki, robi profesjonalną sesję zdjęciową i buduje nowoczesną stronę internetową — wszystko w jednej miesięcznej subskrypcji.",
+  ctaPrimary: { label: "Porozmawiajmy", href: "#kontakt" },
+  ctaSecondary: { label: "Zobacz ofertę", href: "#oferta" },
 };
 
 // Etapy trasy autopilota — napędzają sekcję ProcessSteps.
@@ -99,16 +101,19 @@ export const offer = {
       name: "Dedykowany Film Dokumentalny",
       description:
         "Kręcimy Twoją historię od pierwszego ujęcia po ostatnie cięcie — kamera, scenariusz i montaż kinowy w jednym pakiecie. Z tego samego materiału co miesiąc wycinamy nowe Shorts i Rolki, więc Twój kanał nigdy nie stoi w miejscu.",
+      thumb: "/pc1.JPG",
     },
     {
       name: "Sesja Zdjęciowa",
       description:
         "Fotografujemy Twoje miejsce, zespół i usługi w spójnym, kinowym stylu — gotowe od razu pod stronę WWW i social media, bez dodatkowej obróbki po Twojej stronie.",
+      thumb: "/pc2.JPG",
     },
     {
       name: "Nowoczesna Strona WWW",
       description:
         "Projektujemy stronę dopasowaną do Twojego biznesu, która spina film, zdjęcia i markę w jedną spójną całość — pierwsze wrażenie, które realnie zamienia odwiedzających w klientów.",
+      thumb: "/pc3.JPG",
     },
   ],
   cta: { label: "Zamów Autopilota", href: "#kontakt" },

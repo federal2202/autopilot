@@ -311,7 +311,18 @@ button {
 
 /* ============ BUTTONS ============ */
 
+/* Fold-corner accent: a small triangular "tag" mark in the top-left and
+   bottom-right corners, echoing the reference's folded-paper-corner
+   buttons without literally copying them (no clip-path cut-corner shape
+   — that would clip its own pseudo-elements right along with it, since
+   clip-path masks everything painted through the element, corner marks
+   included). Instead the button keeps its normal rectangular hit area
+   and the marks sit on top as a translucent overlay — every `.btn`
+   variant gets it, tuned per variant below since a light mark reads
+   differently on --accent vs. on cream. */
 .btn {
+  position: relative;
+  overflow: hidden;
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -325,15 +336,54 @@ button {
   white-space: nowrap;
 }
 
+.btn::before,
+.btn::after {
+  content: "";
+  position: absolute;
+  width: 13px;
+  height: 13px;
+  pointer-events: none;
+  transition: background 0.3s ease;
+}
+
+.btn::before {
+  top: 0;
+  left: 0;
+  clip-path: polygon(0 0, 100% 0, 0 100%);
+}
+
+.btn::after {
+  bottom: 0;
+  right: 0;
+  clip-path: polygon(100% 100%, 100% 0, 0 100%);
+}
+
+/* Primary CTAs get the site's one accent color instead of plain ink —
+   previously every button (navbar, hero, offer, closing, contact) was
+   the same dark-on-cream as body text/links, which read as "there,
+   but not interesting." --accent (#eb381c) was already quietly present
+   sitewide as the ProcessSteps "KM 01" index color — this just makes
+   it the thing CTAs are actually built around, instead of one stray
+   accent color with no home. */
 .btn-primary {
-  background: var(--fg);
-  color: var(--on-invert);
-  border: 1px solid var(--fg);
+  background: var(--accent);
+  color: var(--cream);
+  border: 1px solid var(--accent);
+}
+
+.btn-primary::before,
+.btn-primary::after {
+  background: rgba(245, 242, 243, 0.5);
 }
 
 .btn-primary:hover {
   background: transparent;
-  color: var(--fg);
+  color: var(--accent);
+}
+
+.btn-primary:hover::before,
+.btn-primary:hover::after {
+  background: var(--accent);
 }
 
 .btn-secondary {
@@ -342,14 +392,24 @@ button {
   border: 1px solid var(--border-strong);
 }
 
+.btn-secondary::before,
+.btn-secondary::after {
+  background: var(--accent);
+}
+
 .btn-secondary:hover {
-  border-color: var(--fg);
+  border-color: var(--accent);
 }
 
 .btn-ghost {
   background: transparent;
   color: var(--muted);
   border: 1px solid var(--border);
+}
+
+.btn-ghost::before,
+.btn-ghost::after {
+  background: var(--border-strong);
 }
 
 .btn-ghost:hover {
@@ -525,14 +585,8 @@ button {
   display: none;
   padding: 15px 32px;
   font-size: 13px;
-  background: var(--ink);
-  color: var(--cream);
-  border-color: var(--ink);
-}
-
-.navbar-cta.btn:hover {
-  background: transparent;
-  color: var(--ink);
+  /* Color/background no longer overridden here — inherits .btn-primary's
+     --accent styling now that every primary CTA sitewide shares it. */
 }
 
 .navbar-menu-toggle {
@@ -841,45 +895,143 @@ button {
   color: var(--cream);
 }
 
-/* ============ INTRO (stat strip + about blurb) ============ */
+/* ============ INTRO (stat column + about statement + media row) ============ */
 
-.intro-stats {
+.intro-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: var(--sp-3);
-  text-align: center;
-  margin-bottom: var(--sp-10);
+  gap: var(--sp-6);
 }
 
-@media (min-width: 700px) {
-  .intro-stats {
-    grid-template-columns: repeat(4, 1fr);
-    text-align: left;
+@media (min-width: 860px) {
+  .intro-grid {
+    /* Widened from 220px — that was only ever sized for the stat text,
+       but this column also carries the video now (reference: stats on
+       top, video at the bottom of the *same* narrow column), and 220px
+       is too tight for a 16:9 box to read as intentional rather than
+       cramped. */
+    grid-template-columns: 340px 1fr;
+    gap: var(--sp-8);
+    /* Stretch (the grid default — no `align-items` override) so both
+       columns share the row's full height. `.intro-stats-col` uses that
+       height to push its video to the bottom via `space-between`,
+       instead of the video just trailing directly under the stats. */
   }
+}
+
+.intro-stats-col {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+}
+
+@media (min-width: 860px) {
+  .intro-stats-col {
+    /* Stats pinned to the top, video pinned to the bottom of the same
+       column — matches the reference's left column exactly, and holds
+       regardless of how tall the right column's paragraph ends up. */
+    justify-content: space-between;
+  }
+}
+
+.intro-stats {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-3);
 }
 
 .intro-stat {
   font-family: var(--font-grotesk), sans-serif;
-  font-size: clamp(15px, 1.6vw, 19px);
-  font-weight: 500;
-  letter-spacing: -0.2px;
+  font-size: clamp(12px, 1vw, 13px);
+  font-weight: 600;
+  letter-spacing: 0.4px;
   text-transform: uppercase;
-  color: var(--fg);
-  padding-top: var(--sp-3);
-  border-top: 1px solid var(--border);
+  color: var(--muted);
 }
 
 .intro-about {
-  max-width: 760px;
-  margin: 0 auto;
-  text-align: center;
+  max-width: 900px;
 }
 
 .intro-about-text {
-  font-size: clamp(19px, 2.4vw, 27px);
-  line-height: 1.5;
+  /* Bumped up significantly and given real weight — per request, this
+     needed to read as "big, emphasized" rather than body-copy-sized. */
+  font-size: clamp(26px, 3.6vw, 44px);
+  font-weight: 600;
+  line-height: 1.25;
   color: rgba(31, 31, 31, 0.18);
-  letter-spacing: -0.3px;
+  letter-spacing: -0.6px;
+}
+
+/* Empty slot — the actual <video> lives in Showreel.jsx's big box
+   further down the page and gets GSAP-Flip'd to visually sit here until
+   you scroll it away. Sized/placed identically to how the video will
+   look once Flip'd here, so there's no layout jump the instant JS takes
+   over. No background color: a solid fill here would show as its own
+   flat block the instant the video's Flip progress moves it elsewhere
+   (before its scroll range starts, or after it's grown past), which
+   read as stray "black shapes" sitting in the page. Transparent means
+   there's simply nothing to see here except the video, wherever it
+   currently visually is. */
+.intro-media-frame {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+}
+
+/* Close under the statement text, not a whole separate row further
+   down — the reference's CTAs sit right beneath the last line of copy. */
+.intro-ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-4);
+  /* Was --sp-6 (28px) — measured against the reference directly (the
+     gap between its paragraph's bottom and its buttons' top runs to
+     roughly 60% of the paragraph's own height, not a tight ~28px), so
+     that read as cramped rather than "close." */
+  margin-top: var(--sp-10);
+}
+
+/* ============ SHOWREEL (video's natural size — see Showreel.jsx) ============ */
+
+/* Overrides the shared `.section`'s `overflow: hidden` (see that rule
+   above) specifically for this section — GSAP Flip positions the video
+   far outside `.showreel-box`'s own rect while it's fitted to look like
+   it's sitting in Intro's small slot (which lives in an entirely
+   different, much-earlier section), and any clipping ancestor along that
+   path hides it completely. Confirmed as the actual cause: the video's
+   `getBoundingClientRect()` matched the small slot's position exactly,
+   but nothing painted — a clipped-yet-correctly-positioned element looks
+   identical to "not there," which read as "just a black screen." */
+section.showreel-section {
+  overflow: visible;
+}
+
+.showreel-box {
+  position: relative;
+  /* No overflow: hidden here either, for the same reason — this is the
+     video's positioning containing block (nearest `position` ancestor),
+     so it's the tightest possible clip on exactly the content that needs
+     to render outside it mid-Flip. Its final, natural (non-flipped)
+     state is already sized to exactly fill this box (100%/100%,
+     object-fit: cover), so there's nothing left over to clip once the
+     animation completes anyway — this was purely defensive and actively
+     harmful here. */
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  /* No background color, same reasoning as .intro-media-frame — the
+     video isn't removed from this box's normal document flow when Flip
+     transforms it to look small (transform doesn't affect layout), so
+     this box stays at full height in the page the whole time regardless
+     of where the video currently visually is. A solid fill here painted
+     as a large stray black rectangle sitting empty whenever the video
+     had Flip'd itself elsewhere. */
+}
+
+.showreel-video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 /* ============ PINNED TAGLINE (scroll-scrubbed statement) ============ */
@@ -901,52 +1053,6 @@ button {
   text-align: center;
   text-transform: uppercase;
   color: rgba(31, 31, 31, 0.16);
-}
-
-/* ============ SCALING MEDIA (pinned scale-up) ============ */
-
-.scaling-media-wrap {
-  position: relative;
-  height: 220svh;
-}
-
-.scaling-media-pin {
-  position: sticky;
-  top: 0;
-  height: 100svh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  overflow: hidden;
-}
-
-.scaling-media-frame {
-  position: relative;
-  overflow: hidden;
-  border-radius: 24px;
-  background: var(--near-black);
-  width: 60vw;
-  height: 60vh;
-  max-width: 900px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.scaling-media-frame .hero-sculpture {
-  transform: scale(1.4);
-}
-
-@media (max-width: 640px) {
-  .scaling-media-wrap {
-    height: 160svh;
-  }
-
-  .scaling-media-frame {
-    width: 84vw;
-    height: 42vh;
-    border-radius: 16px;
-  }
 }
 
 /* ============ SERVICES LIST ("WHAT I DO" accordion) ============ */
@@ -1021,16 +1127,17 @@ button {
   line-height: 1.6;
 }
 
-/* Real photos aren't in yet (see DESIGN_DECISIONS.md) — plain white panel,
-   square corners, matching the reference's untreated photo crop. Pinned to
-   the item's top-right corner (level with the title), independent of the
-   text column's own height, instead of trailing below the paragraph. */
+/* Per-service photo, square corners, matching the reference's untreated
+   photo crop. Pinned to the item's top-right corner (level with the
+   title), independent of the text column's own height, instead of
+   trailing below the paragraph. */
 .services-thumb {
   position: absolute;
   top: 26px;
   right: 0;
   width: clamp(176px, 22vw, 308px);
   height: clamp(121px, 13.5vw, 200px);
+  object-fit: cover;
   background: #fff;
   pointer-events: none;
 }

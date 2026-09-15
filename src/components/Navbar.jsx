@@ -60,7 +60,7 @@ export default function Navbar() {
 
         <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
           <a href="#kontakt" className="navbar-cta btn btn-primary">
-            Umów rozmowę
+            Porozmawiajmy
           </a>
 
           <button
@@ -83,7 +83,7 @@ export default function Navbar() {
             </a>
           ))}
           <a href="#kontakt" className="btn btn-primary btn-block" style={{ marginTop: 12 }} onClick={() => setOpen(false)}>
-            Umów rozmowę
+            Porozmawiajmy
           </a>
         </div>
       </div>

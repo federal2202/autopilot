@@ -3,7 +3,7 @@ import Hero from "@/components/Hero";
 import PinnedTagline from "@/components/PinnedTagline";
 import Marquee from "@/components/Marquee";
 import Intro from "@/components/Intro";
-import ScalingMedia from "@/components/ScalingMedia";
+import Showreel from "@/components/Showreel";
 import ServicesList from "@/components/ServicesList";
 import ProcessSteps from "@/components/ProcessSteps";
 import Faq from "@/components/Faq";
@@ -18,9 +18,9 @@ export default function Home() {
       <main>
         <Hero />
         <PinnedTagline />
-        <Marquee />
         <Intro />
-        <ScalingMedia />
+        <Marquee />
+        <Showreel />
         <ServicesList />
         <ProcessSteps />
         <Faq />

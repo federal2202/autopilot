@@ -59,8 +59,10 @@ export default function ServicesList() {
 
                 <AnimatePresence>
                   {isOpen && (
-                    <m.span
+                    <m.img
                       key="thumb"
+                      src={item.thumb}
+                      alt=""
                       className="services-thumb"
                       aria-hidden="true"
                       initial={{ clipPath: "inset(0% 0% 100% 0%)" }}

@@ -9,14 +9,14 @@ is ready — nothing here is final.
 - **Scaling-scroll section (`ScalingMedia.jsx`)** — still runs the
   `AsciiSculpture` canvas stand-in. Swap for real photo/video into
   `.scaling-media-frame` when available.
-- **Services accordion thumbnail (`ServicesList.jsx`)** — the reference's
-  "WHAT I DO" accordion shows a real photo (a desk/workspace shot) next to
-  the expanded item. Same placeholder story: `.services-thumb` currently
-  renders `<AsciiSculpture />` at a small size. Swap for a real per-service
-  photo (or one shared brand photo) when available — one `<img>`/`<video>`
-  per accordion item, or a single shared image, either works with the
-  existing expand/collapse animation.
 ## Resolved (recorded for context)
+
+- **Services accordion thumbnail (`ServicesList.jsx`)** — was a plain white
+  `.services-thumb` panel. `pc1/pc2/pc3.JPG` were sitting unused in
+  `public/` (only `pc4/pc5/stas.JPG` are wired into the Hero slideshow), so
+  swapped them in as one real per-service photo each (`<img>` instead of
+  the empty span), matching the reference's real desk/workspace shot next
+  to the expanded item.
 
 - **Hero cold-open (`Hero.jsx`)** — reproduces the nbnzia.com reference's
   loader→hero mechanic 1:1: "Auto"/"pilot" render merged as one wordmark on
@@ -327,10 +327,409 @@ is ready — nothing here is final.
   two-stage ghost→ink — the accent flash felt like more moving parts than
   the payoff was worth for a body paragraph.
 
-- **Case studies section** — the reference has a real named-client
-  portfolio with results. We have no such data, so `Partners.jsx` fills that
-  visual slot instead, showing the real equipment/lifestyle partners in the
-  same numbered-row layout. Not a 1:1 content match, but honest.
+- **Case studies section (superseded)** — the reference has a real
+  named-client portfolio with results. We had no such data, so
+  `Partners.jsx` filled that visual slot with real equipment/lifestyle
+  partners instead. Later removed at direct request (not needed for this
+  business) and replaced with `Faq.jsx` — see the FAQ entry further down.
+- **Intro section rebuilt to match the reference 1:1** — previously a
+  single centered column (a horizontal 4-stat row, then a centered about
+  paragraph), with a *separate* full-bleed pinned-scale section
+  (`ScalingMedia.jsx`) directly after it. Reference layout is different:
+  a narrow stat column pinned to the *left*, the pitch statement filling
+  the rest of the row, then a small looping showreel clip sitting next to
+  two CTAs ("Let's talk" / "See the work"), with the stat marquee running
+  along the *bottom* of that same block — not a separate section above
+  it. Rebuilt `Intro.jsx` to match: `.intro-grid` (220px stat column +
+  flexible text column on desktop, stacked on mobile), `.intro-stats`
+  changed from a 4-across row to a plain vertical list (no more
+  border-top dividers — the reference's list is a plain stack, not a
+  bordered strip), and a new `.intro-media-row` (small `aspect-ratio:
+  16/9` video box + `.intro-media-ctas`) below it. `Marquee.jsx` moved in
+  `page.js` from *before* `Intro` to directly *after* it, so it now reads
+  as the bottom edge of this block instead of its own section further up
+  the page. CTAs reuse the site's existing `.btn-primary`/`.btn-secondary`
+  (solid ink / outlined) rather than introducing the reference's red
+  accent color — this site's palette has been deliberately monochrome
+  cream/near-black throughout, and one CTA pair isn't a reason to break
+  that.
+- **`ScalingMedia.jsx` retired** — its full-bleed pinned-scale-on-scroll
+  treatment doesn't match the reference's actual small, static-position
+  video slot in this block (a pinned full-viewport takeover and a small
+  inline thumbnail are fundamentally different mechanics, not a sizing
+  tweak of the same one). Deleted the component and its
+  `.scaling-media-*` CSS; `AsciiSculpture.jsx` itself stays, since
+  `ServicesList.jsx`'s `.services-thumb` still uses it as a per-item
+  placeholder. If a big pinned-scale moment is wanted elsewhere later,
+  this is a reasonable pattern to revive, just not for this slot.
+- **Real video swapped in for the placeholder, muted for now (per
+  request)** — `/video.mp4` in `.intro-media-frame`, `autoPlay loop muted
+  playsInline`. Re-encoded from the original HEVC/H.265 source to
+  H.264 (`yuv420p`, `+faststart`), because HEVC in `<video>` has patchy
+  support outside Safari/macOS — playing the original as-is would have
+  silently failed to autoplay (or failed entirely) for a large share of
+  visitors on Chrome/Windows/Linux. Also downscaled 1920×1080 → 960×540
+  and stripped audio during the re-encode, since this box never renders
+  wider than a few hundred px — full 1080p would just be wasted bytes.
+- **Tooling incident: re-encoding in place destroyed the source file.**
+  The project directory lives on a case-insensitive filesystem (macOS
+  APFS default) — `video.mp4` and `video.MP4` are *the same file* on
+  disk, not two files that happen to look similar. Ran
+  `ffmpeg -i public/video.MP4 ... public/video.mp4` — input and output
+  resolved to the identical inode, so ffmpeg read and wrote the same
+  file simultaneously mid-transcode, truncating the 22 MB original down
+  to a single corrupted frame with no way to recover it from that copy.
+  The original survived only because an untouched copy still existed at
+  `~/Downloads/video.MP4` (where the user had originally saved it) — re-
+  ran the encode from that copy instead. **Lesson: on a case-insensitive
+  filesystem, never use a same-named-but-different-case path as both the
+  input and output of any in-place file operation (`ffmpeg`, `sips`,
+  `mv`, etc.) — check `diff <(shasum -a1 pathA) <(shasum -a1 pathB)` first
+  if there's any doubt, and always transcode to a different filename (or
+  a temp path, then move) rather than trusting the case difference to
+  keep the paths distinct.**
+- **Media row was spanning the wrong columns** — first pass put
+  `.intro-media-row` as a sibling of `.intro-grid`, so it stretched under
+  *both* the stat column and the text column starting from the container's
+  left edge. In the reference, the video+CTA row sits flush with the text
+  column only — the stat column has nothing below its four lines. Fixed
+  by nesting `.intro-media-row` inside `.intro-about` (right column),
+  right after the paragraph.
+- **Video needed a continuous scroll-linked scale, not a one-time
+  reveal** — per direct request/confirmation. Reused the exact transform
+  math from the retired `ScalingMedia.jsx` (`scale` interpolated
+  `[0.9, 1, 1.05]` across `[0, 0.5, 1]` of `scrollYProgress`, via
+  `useScroll({ target, offset: ["start end", "end start"] })` +
+  `useTransform`) but applied directly to `.intro-media-frame` in place —
+  no `position: sticky` pin, no full-viewport takeover, just the small
+  inline box continuously growing/shrinking as it transits the viewport.
+  Replaced the one-time `Reveal` (scale 0.9→1 on first view, then frozen)
+  that was there before, since a `whileInView{once:true}` animation and a
+  continuous scroll-driven one can't coexist on the same transform
+  property.
+- **Still not a match — turned out to be a fundamentally different
+  mechanic, not a tuning problem.** Direct inspection of nbnzia's live DOM
+  (`document.querySelector('video')` and its ancestor chain — the earlier
+  automated screenshots of their site had come back blank, but the DOM
+  itself was reachable via `javascript_tool` even while visually stuck
+  mid-load) turned up `.scaling-video` / `.scaling-video__wrapper` with
+  `data-flip-element="target"` / `data-flip-id="auto-2"` attributes, and
+  **two separate sections** — `.scaling-element-header` containing
+  `.scaling-element__small-box` (measured: 320×180px) and, further down
+  the page, `.scaling-element-video` containing `.scaling-element__big-box`
+  (measured: 1408×792px — same 16:9 ratio, just bigger). One video
+  element, two differently-sized boxes in two different sections, tied
+  together by `data-flip-id`: this is GSAP's **Flip** plugin, not a
+  single element scaling itself in place via `useTransform`/CSS
+  `transform`. Every earlier attempt (framer-motion `Reveal` scale,
+  `useScroll`/`useTransform` continuous scale) was solving the wrong
+  problem — animating one box, when the reference animates one *video
+  element relocating and resizing between two boxes*.
+- **Rebuilt around GSAP Flip to match.** `Intro.jsx`'s `.intro-media-frame`
+  is now an empty slot (`data-showreel-slot="small"`, no `<video>` inside
+  it at all) — just a placeholder reserving the right size/position.
+  The actual `<video>` lives in a new `Showreel.jsx`, a full-container-width
+  16:9 section further down the page (`.showreel-box`, sized like the
+  reference's big box) — its natural, real DOM position. On mount,
+  `Showreel.jsx` uses `Flip.fit(video, smallSlot, {absolute:true,
+  scale:true, duration:0})` to instantly snap the video's visual
+  appearance to match the small slot (confirmed pixel-exact via
+  `getBoundingClientRect` — 340×191.3 fitted vs. 340×191.25 target, no
+  drift), captures that as a Flip state, then `Flip.from(state, {
+  scrollTrigger: { trigger: bigBox, start: "top bottom", end: "top top",
+  scrub: true } })` animates it from "looks small" back to its natural
+  big size as `Showreel.jsx`'s section scrolls into view — reversible,
+  scroll-position-driven, same as the reference. This is architecturally
+  the same trick this project already used by hand for the Hero photo
+  (measure a rect, pin it, animate to a different rect) — GSAP's Flip
+  plugin is just the packaged version of that idea, and it was already a
+  project dependency (`gsap` ^3.15.0 — Flip and ScrollTrigger are both
+  bundled in, imported per-use same as `gsap/SplitText` elsewhere).
+  Live scroll-scrub playback couldn't be verified in the browser-
+  automation environment (same `document.hidden` / backgrounded-tab
+  throttling documented throughout this project — GSAP's ticker is
+  rAF-driven and stops advancing when the tab is hidden, so a
+  programmatic `scrollTo` doesn't visibly move the animation even though
+  the trigger math is sound); what *was* verified directly: no console
+  errors, and `Flip.fit`'s output rect matches the target slot's rect to
+  sub-pixel precision. Real-browser confirmation of the scrub itself is
+  on the user.
+- **That Flip setup then turned the video fully invisible ("just a black
+  screen").** Cause: `.showreel-box` (`overflow: hidden`) and the shared
+  `.section` utility class (also `overflow: hidden`, used by literally
+  every section on the site) both sit between the video and the page
+  root. `Flip.fit` positions the video far outside `.showreel-box`'s own
+  rect to make it visually land in Intro's small slot — a completely
+  different, much-earlier section — and *any* clipping ancestor along
+  that path hides the paint entirely, even though the element's
+  `getBoundingClientRect()` still reports the mathematically-correct
+  position (clipped-but-correctly-positioned looks identical to "not
+  there" — confirmed by comparing the rect, which matched exactly, against
+  what actually rendered, which was nothing). Fixed with two changes:
+  removed `overflow: hidden` from `.showreel-box` (its natural, non-
+  flipped state already fills it exactly via `object-fit: cover`, so
+  there was never anything to clip in the settled state anyway — it was
+  purely defensive, and actively harmful here), and added
+  `section.showreel-section { overflow: visible; }` — a higher-specificity
+  override scoped to just this one section, rather than touching the
+  shared `.section` rule everyone else still relies on. Verified by
+  re-checking the clipping-ancestor chain from the video up to `<html>`
+  after the fix: empty (only the video's own harmless default
+  `overflow: clip` and `html`'s *horizontal-only* `overflow-x: hidden`
+  remain, neither of which affects this vertical repositioning).
+- **After the clipping fix, still "nothing happens" — this time a real
+  logic bug, not an environment limitation.** User supplied screenshots
+  of nbnzia's actual scroll sequence (small box → mid-transition,
+  visibly both moving *and* growing → full big box), confirming the
+  target mechanic was right; the question was why ours never moved at
+  all. Root-caused by reading GSAP's own `Flip.js` source directly
+  (`node_modules/gsap/dist/Flip.js`), not by guessing: `Flip.from(state,
+  { targets })` is documented to apply a recorded state to different
+  elements than it was captured from, but internally (`_fromTo`, the
+  `for (p in toState.idLookup)` loop) it matches elements between the
+  "from" and "to" states purely by `data-flip-id` — falling back to a
+  *globally incrementing* auto-id (`"auto-" + _id++`) for any element
+  that doesn't already carry one. Two different, unrelated elements
+  (the empty small-slot div and the video) each silently got their own
+  distinct auto-id the first time Flip touched them, so the id lookup
+  never found a match — Flip treated the video as a brand-new element
+  with no recorded "from" state at all, and produced a same-state,
+  zero-duration timeline (confirmed directly: `Flip.from(...).duration()`
+  logged as `0`, despite the two elements' `getBoundingClientRect()`
+  values being genuinely, substantially different — proof this was a
+  matching failure, not a real "nothing changed" result). Fixed by adding
+  the *same* explicit `data-flip-id="showreel-video"` to both the small
+  slot (`Intro.jsx`) and the video (`Showreel.jsx`) — exactly the pattern
+  nbnzia's own DOM already used (`data-flip-id="auto-2"` was visible on
+  their `.scaling-video` back when this was first investigated, which in
+  hindsight was already the answer). Re-verified after the fix by
+  forcibly scrubbing `ScrollTrigger` to 0%, 50%, and 100% and reading the
+  video's rect at each: 340×191 (at the slot) → 836×470 (interpolated
+  midpoint, position *and* size both moving) → 1332×749 (full natural
+  size) — a real, working Flip this time, not just a plausible-looking
+  setup.
+- **Four more rounds of feedback on the showreel/intro block, all fixed
+  together:**
+  - *"Black shapes in the background"* — `.intro-media-frame` (the small
+    slot) and `.showreel-box` (the video's natural home) both had a
+    `background: var(--near-black)` fallback. Since Flip moves the video
+    via `transform` (not `position: absolute`/`fixed`), it never actually
+    leaves either box's normal document flow — `.showreel-box` still
+    reserves its full natural height on the page even while the video
+    is visually elsewhere, and `.intro-media-frame` is a permanently
+    empty div regardless of where the video currently appears. Both
+    backgrounds painted as stray solid rectangles whenever the video
+    wasn't visually overlapping them. Removed both — nothing left to
+    show there except the video itself, wherever it visually is.
+  - *"Video jumps out of the first frame too fast"* — the scrollTrigger
+    span was `trigger: bigBox, start: "top bottom", end: "top top"`,
+    i.e. exactly one viewport-height of scroll distance for the *entire*
+    grow-and-drift. Changed to `trigger: smallSlot, start: "bottom top"`
+    through `endTrigger: bigBox, end: "top top"` — spans the whole real
+    gap between the two sections (Marquee sits in between), giving a
+    slow, gradual drift instead of a one-screen-height pop.
+  - *Intro layout not matching the reference* — three separate issues,
+    all from the same root cause (`.intro-about`'s `max-width: 720px`
+    was too narrow): the CTA row wrapped the buttons below the video
+    instead of beside it (not enough width for video + both buttons on
+    one line). Widened to `1040px`. Also bumped `.intro-about-text` from
+    `clamp(19px,2.4vw,27px)` regular-weight to `clamp(26px,3.6vw,44px)`
+    at `font-weight: 600` per "text should be big, emphasized," and
+    added a `filter: blur(6px) -> blur(0px)` scrub alongside the
+    existing color ghost-to-ink scrub in `Intro.jsx` (same GSAP
+    SplitText mechanism, just an added property) for a more "interesting
+    appearance" at this larger size than a flat color fade alone gave.
+  - *"Buttons should be more interesting, with an accent color"* —
+    sitewide `.btn` redesign. Adopted `--accent` (`#eb381c`), which
+    already existed in the palette and was already quietly in use
+    (ProcessSteps' "KM 01" index color) but had no real home — now
+    `.btn-primary`'s background everywhere (navbar, hero-adjacent CTAs,
+    offer, closing, contact, intro), replacing the plain `--fg`/ink it
+    used before. Added a fold-corner "tag" mark (small triangular
+    `::before`/`::after` overlays in the top-left/bottom-right corners,
+    tuned per variant) echoing the reference's folded-paper-corner
+    buttons without literally copying them — deliberately **not** a
+    `clip-path` cut corner, since clip-path masks everything painted
+    through the element, pseudo-elements included, so a corner *notch*
+    on the button would also erase any mark trying to fill that same
+    notch. An opaque overlay avoids that entirely.
+- **A refresh-timing bug specific to Flip + a live ScrollTrigger.** While
+  fixing the above, the video stopped rendering the fitted-small look
+  altogether after the layout changes — it just sat at its natural big
+  size/position with an empty `style=""` attribute, as if Flip had never
+  run. Root cause: the Flip/ScrollTrigger setup runs once, in an effect,
+  right as the component mounts — but layout (web fonts swapping in,
+  text reflowing at the new larger size, the video's own metadata still
+  loading) can still be shifting at that exact moment, so the
+  measurements taken then go stale almost immediately, and nothing
+  forces a second look. Fixed with two additions: an explicit
+  `ScrollTrigger.refresh()` call right after setup (re-measures
+  everything once layout has had a beat to settle), plus `onRefresh:
+  (self) => self.animation.progress(self.progress)` on the scrollTrigger
+  itself. The second part matters independently of the first: refresh()
+  can leave the DOM at the video's natural (un-fitted) state even when
+  the calculated `progress` is unchanged (0 -> 0), because refresh's own
+  remeasurement pass needs to briefly clear a Flip'd element's overrides
+  to find its true natural bounds, and won't bother re-rendering
+  afterward if it doesn't think progress changed — confirmed directly by
+  watching the video's inline `style` attribute go from a correct fitted
+  transform to empty (`""`) after a scroll-triggered refresh, with no
+  console error anywhere. `onRefresh` forcing a render guarantees the
+  DOM always matches whatever progress the trigger is actually at, on
+  every refresh, not just the first one — the fix isn't a one-time
+  workaround, it's needed for the automatic refreshes a window resize
+  triggers too.
+- **Intro layout restructured to match the reference's actual column
+  split.** Previous layout put stats in the left column alone, and the
+  video + both CTAs together in one row under the paragraph on the
+  right — our own invention, not what the reference does. Reference:
+  the *left* column carries the stats **and** the video (stats on top,
+  video pinned to the bottom of that same narrow column), while the
+  *right* column is just the paragraph with the CTAs sitting close
+  underneath it — no video there at all. Rebuilt to match: `.intro-grid`
+  widened its left track from `220px` to `340px` (220px was sized only
+  for the stat text; a 16:9 video needs real room to not look cramped),
+  and `.intro-stats-col` (new wrapper around `.intro-stats` +
+  `.intro-media-frame`) is a flex column with `justify-content:
+  space-between` — since CSS grid's default `align-items: stretch`
+  (removing the `align-items: start` override from the previous layout)
+  makes both grid columns share the row's full height, `space-between`
+  reliably pins stats to the top and the video to the bottom regardless
+  of how tall the paragraph makes the row, without any manual height
+  math. Verified the two now share a bottom edge with the CTAs' own
+  bottom via `getBoundingClientRect()` — both landed at the same y
+  value. CTAs moved from their own separate row into `.intro-about`
+  directly (renamed `.intro-media-ctas` → `.intro-ctas`, `margin-top`
+  cut from `--sp-10` to `--sp-6`) so they sit close under the last line
+  of text, matching the reference instead of trailing far below it.
+- **That gap was cut too far — measured the reference again and reverted
+  direction.** Re-measured a clean (non-transitional) reference
+  screenshot directly: the gap between the paragraph's own bottom and
+  the buttons' top runs to roughly 60% of the paragraph's height, not a
+  tight ~28px. `.intro-ctas`'s `margin-top` moved back up, this time to
+  `--sp-10` (96px) instead of the `--sp-6` (28px) from the previous
+  round — that previous cut was based on a misread of the reference,
+  not a correction of it. Also removed the `filter: blur()` scrub added
+  alongside the color ghost-to-ink reveal in `Intro.jsx` the same round
+  it was added — kept the plain color scrub only, per direct request to
+  drop it. The apparent "everything sinks to the bottom" complaint that
+  came with this was most likely the blur itself: a blurred, low-
+  contrast paragraph mid-scrub visually reads as background noise,
+  making the video + buttons area (already anchored toward the row's
+  bottom by design — see the space-between entry above) look like the
+  only "real" content on screen, exaggerating how bottom-heavy the
+  section felt. Removing the blur was likely most of that fix on its
+  own; the two changes shipped together rather than trying to isolate
+  which one mattered more.
+- **The Flip fit was inconsistent load to load — one more layer of the
+  same refresh-timing issue.** After the earlier fix (an immediate
+  `ScrollTrigger.refresh()` + `onRefresh` forcing a re-render every
+  refresh), the Flip still sometimes landed correctly and sometimes
+  didn't, depending on the load — the signature of a race rather than a
+  deterministic bug. The remaining gap: that one `refresh()` call runs
+  synchronously right after setup, but next/font swaps the real
+  typeface in asynchronously (`font-display: swap`), and that swap
+  reflows `.intro-about-text` — the row's tallest, height-defining
+  column — *after* the immediate refresh on a slow/cold-cache load, but
+  *before* it on a fast/warm one. Same code, two different measured
+  layouts, purely depending on network/cache timing that varies between
+  loads. Fixed by adding two more refresh calls, both safe to repeat
+  now that `onRefresh` exists: `document.fonts.ready.then(() =>
+  ScrollTrigger.refresh())` (fires exactly when every font is actually
+  done swapping — a no-op timing-wise on a fast load, load-bearing on a
+  slow one), and a `window.load` refresh for anything else (images, the
+  video's own metadata) — guarded with a `document.readyState ===
+  "complete"` check first, since `load` can easily have already fired
+  by the time this effect runs and would otherwise never call back.
+  Reloaded repeatedly in this session's own test environment and got
+  identical fitted geometry every time (fonts were already
+  locally cached after the first compile, so the slow-load path
+  specifically couldn't be reproduced here) — the fix targets the
+  mechanism directly rather than a symptom that was observed to
+  reproduce locally; real confirmation on a genuinely cold cache is on
+  the user.
+- **Showreel abandoned GSAP Flip/ScrollTrigger entirely for a manual,
+  no-caching rAF loop — the refresh-timing patches above kept the
+  symptom alive.** Even after the `refresh()` + `onRefresh` +
+  `document.fonts.ready` + `window.load` layering (previous entry), the
+  user still reported the video landing differently load to load, and
+  on one reload it appeared instantly at its natural (big) position at
+  the bottom of the page, then visibly jumped to the correct fitted
+  position and back to the scroll position once scrolling reached it.
+  Every one of these fixes shared the same shape: measure geometry
+  once, cache it, and add one more event that re-measures and patches
+  the cache. That approach can only ever be as complete as the list of
+  events considered — a web font swap, another component's own async
+  GSAP setup shifting spacing, or anything else not yet on the list
+  leaves the cached geometry stale until some unrelated scroll/resize
+  happens to force a correction, which is exactly what "works
+  sometimes, jumps other times" looks like from outside. Rewrote
+  `Showreel.jsx` to not cache anything at all: a single
+  `requestAnimationFrame` loop re-reads both the small slot's and the
+  big box's `getBoundingClientRect()` from scratch and recomputes the
+  video's `position:fixed` left/top/width/height every ~16ms, for as
+  long as the component is mounted, independent of scroll/resize/font
+  events entirely. There is no stale state to correct because nothing
+  is ever held past a single frame — whatever the layout actually is
+  *right now* is what gets read. `Flip`, `ScrollTrigger`, and
+  `data-flip-id` were removed from both `Showreel.jsx` and `Intro.jsx`.
+- **New requirement: the video should start growing immediately on
+  scroll and be fully visible by the time the marquee/gap area is
+  reached, not still mid-transition or off-screen through it.**
+  Previously the grow phase was driven by "however far away the big
+  box actually is," so with `Marquee` sitting in the gap between the
+  intro and the showreel section, most of that scroll distance was
+  spent watching the video still small or already off-screen — a dead
+  stretch. Changed growth to a fixed, short distance
+  (`window.innerHeight * 0.6`) driven by how far the small slot's
+  bottom edge is from the viewport's top, independent of where the big
+  box physically sits. Once fully grown it doesn't jump-cut to
+  tracking the big box's real (likely still-offscreen) position either
+  — it parks centered in the viewport (`pinnedY`) and stays there until
+  the box's own natural scroll position rises up to meet it, at which
+  point it hands off to tracking the box directly. Three sequential
+  math bugs surfaced while building this, each found by injecting the
+  exact render logic as JS into the live page and checking
+  `getBoundingClientRect()` numbers directly rather than relying on
+  screenshots (the automation tab is backgrounded, which stalls both
+  `requestAnimationFrame` past its first tick and `<video>` decode —
+  see `ANIMATION-FLICKER-FRAMEWORK.md`'s tooling-gotcha section):
+  - **Moving-target interpolation source.** Using the slot's *live*
+    `getBoundingClientRect().top` as the lerp start once scrolled past
+    it made the video chase an ever-more-negative (further off-screen)
+    target throughout the whole grow phase instead of crossing back
+    into view. Fixed by deriving the scroll-invariant "top the slot had
+    at the instant its bottom crossed the viewport top" —
+    `-smallRect.height` — since the slot's own height doesn't change
+    with scroll, only its position does.
+  - **Pre-trigger regression from that fix.** Using the fixed
+    `-smallRect.height` value unconditionally (even before the trigger
+    point) put the video off-screen at page load, when it should have
+    simply tracked the slot's real, fully-visible position. Fixed with
+    `remaining > 0 ? smallRect.top : -smallRect.height` (`remaining` =
+    px until the slot's bottom reaches the viewport top) — the two
+    forms agree exactly at `remaining === 0`, so there's no seam.
+  - **Phase-boundary discontinuity.** A hard `sizeProgress < 1 ?
+    animate : pinned-or-release` branch assumed growth always finishes
+    before the box's natural position could reach the pin point. On
+    this site's actual (short) intro-to-showreel gap that's false: at
+    `sizeProgress≈0.9998` the "still animating" branch gave `y≈15.89`
+    while the "released" branch would have given `y≈-115` at the same
+    instant — a real, visible jump right at the boundary. Fixed by not
+    branching on the crossover at all: `growthY` computes the
+    growth-phase value regardless, and `y = Math.min(growthY,
+    bigRect.top)` is taken every frame — release can happen mid-growth
+    if the box gets there first, and the two curves never disagree
+    because there's no threshold where behavior switches out from
+    under them.
+  Verified the final formula with an 8-point numeric scroll sweep
+  injected into the live page (pre-trigger, trigger, four points
+  through the grow phase, the release point, and past it), confirming
+  smooth non-discontinuous position/size at every point. `npx eslint`
+  on both files is clean. True animation-smoothness and video-decode
+  behavior could not be visually confirmed in this environment (see
+  tooling-gotcha note) — geometry was verified numerically instead;
+  real confirmation in a focused, real browser tab is on the user.
 - **Contact form** — the reference's contact section actually submits
   (Name/Email/Submit). `Contact.jsx` intentionally stays as static
   email/phone cards — no fake form UI with nowhere to send data.
