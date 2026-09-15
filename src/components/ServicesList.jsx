@@ -42,7 +42,7 @@ export default function ServicesList() {
                   <span className="services-index" aria-hidden="true">
                     [ 0{i + 1} ]
                   </span>
-                  <h4 className="services-name">{item.name}</h4>
+                  <h3 className="services-name">{item.name}</h3>
                 </button>
 
                 <m.div
@@ -62,7 +62,7 @@ export default function ServicesList() {
                     <m.img
                       key="thumb"
                       src={item.thumb}
-                      alt=""
+                      alt={item.name}
                       className="services-thumb"
                       aria-hidden="true"
                       initial={{ clipPath: "inset(0% 0% 100% 0%)" }}

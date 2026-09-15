@@ -4,7 +4,7 @@ export const site = {
   name: "AR Autopilot",
   title: "AR Autopilot — Film, sesja i strona WWW w jednej subskrypcji",
   description:
-    "AR Autopilot tworzy dla Twojego biznesu dedykowany film dokumentalny, montuje z niego Shorts i Rolki, robi profesjonalną sesję zdjęciową i buduje nowoczesną stronę internetową — wszystko w jednej miesięcznej subskrypcji.",
+    "AR Autopilot nagrywa film, montuje Shorts i Rolki, robi sesję zdjęciową i buduje stronę WWW dla Twojej firmy — wszystko w jednej miesięcznej subskrypcji.",
   url: "https://www.ar-autopilot.pl",
   locale: "pl_PL",
 };

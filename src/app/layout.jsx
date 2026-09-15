@@ -1,7 +1,7 @@
 import localFont from "next/font/local";
 import { Fraunces, Space_Grotesk } from "next/font/google";
 import "./globals.css";
-import { site } from "@/data/content";
+import { site, contact } from "@/data/content";
 import MotionProvider from "@/components/MotionProvider";
 import SmoothScroll from "@/components/SmoothScroll";
 import CustomCursor from "@/components/CustomCursor";
@@ -64,6 +64,23 @@ export const metadata = {
     description: site.description,
   },
   robots: { index: true, follow: true },
+  // Google Search Console ownership verification — paste the "content"
+  // value from Search Console's HTML tag method here once the property is
+  // added (Settings → Ownership verification → HTML tag):
+  // verification: { google: "PASTE_CODE_HERE" },
+};
+
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@type": "ProfessionalService",
+  name: site.name,
+  description: site.description,
+  url: site.url,
+  image: `${site.url}/opengraph-image`,
+  email: contact.email,
+  telephone: contact.phone.number,
+  areaServed: "PL",
+  address: { "@type": "PostalAddress", addressCountry: "PL" },
 };
 
 export const viewport = {
@@ -74,6 +91,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="pl" className={`${geist.variable} ${fraunces.variable} ${grotesk.variable}`}>
       <body>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+        />
         <MotionProvider>
           <SmoothScroll />
           <GrainOverlay />

@@ -595,7 +595,7 @@ button {
   color: var(--ink);
 }
 
-@media (min-width: 900px) {
+@media (min-width: 1100px) {
   .navbar-links {
     display: flex;
     margin-right: 8px;
@@ -645,7 +645,7 @@ button {
   text-transform: uppercase;
 }
 
-@media (min-width: 900px) {
+@media (min-width: 1100px) {
   .mobile-menu,
   .navbar-menu-toggle {
     display: none;
@@ -1434,6 +1434,8 @@ section.showreel-section {
   display: inline-flex;
   align-items: center;
   gap: 8px;
+  padding: 12px 4px;
+  margin: -12px -4px;
 }
 
 .contact-phone-card {
@@ -1476,6 +1478,10 @@ section.showreel-section {
   font-weight: 600;
   font-size: 15px;
   color: var(--fg);
+  display: inline-flex;
+  align-items: center;
+  padding: 10px 0;
+  margin: -10px 0;
 }
 
 /* ============ FOOTER ============ */

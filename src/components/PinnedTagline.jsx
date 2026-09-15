@@ -54,9 +54,9 @@ export default function PinnedTagline() {
   return (
     <section ref={sectionRef} className="tagline-section section-cream">
       <div className="container">
-        <p ref={textRef} className="tagline-text">
+        <h1 ref={textRef} className="tagline-text">
           {hero.lead}
-        </p>
+        </h1>
       </div>
     </section>
   );

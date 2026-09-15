@@ -36,7 +36,7 @@ export default function Faq() {
                   aria-expanded={isOpen}
                   onClick={() => setOpenIndex(isOpen ? null : i)}
                 >
-                  <h4 className="faq-question">{item.question}</h4>
+                  <h3 className="faq-question">{item.question}</h3>
                   <span className="faq-toggle" aria-hidden="true">
                     <PlusIcon style={{ width: 20, height: 20 }} />
                   </span>
