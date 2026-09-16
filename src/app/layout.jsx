@@ -1,5 +1,4 @@
 import localFont from "next/font/local";
-import { Fraunces, Space_Grotesk } from "next/font/google";
 import "./globals.css";
 import { site, contact } from "@/data/content";
 import MotionProvider from "@/components/MotionProvider";
@@ -16,23 +15,10 @@ const geist = localFont({
   display: "swap",
 });
 
-const fraunces = Fraunces({
-  subsets: ["latin", "latin-ext"],
-  style: ["normal", "italic"],
-  weight: "variable",
-  axes: ["opsz", "SOFT", "WONK"],
-  variable: "--font-fraunces",
-  display: "swap",
-});
-
-// Display grotesk for the big nbnzia-style headlines — stands in for the
-// reference site's commercial "Bdogrotesk" (not freely licensable).
-const grotesk = Space_Grotesk({
-  subsets: ["latin", "latin-ext"],
-  weight: ["500", "700"],
-  variable: "--font-grotesk",
-  display: "swap",
-});
+// Display headline/serif faces (Fraunces, Space Grotesk) were dropped in
+// favor of the system font stack (see --font-fraunces/--font-grotesk in
+// globals.css, both now aliased to --font-system) — nothing in this file
+// needs to load or expose those web fonts any more.
 
 export const metadata = {
   metadataBase: new URL(site.url),
@@ -89,7 +75,7 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="pl" className={`${geist.variable} ${fraunces.variable} ${grotesk.variable}`}>
+    <html lang="pl" className={geist.variable}>
       <body>
         <script
           type="application/ld+json"

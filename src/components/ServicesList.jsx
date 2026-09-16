@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AnimatePresence, m } from "framer-motion";
+import { m } from "framer-motion";
 import { offer } from "@/data/content";
 import { ArrowIcon } from "./icons";
 import Reveal from "./Reveal";
@@ -58,20 +58,15 @@ export default function ServicesList() {
                   </div>
                 </m.div>
 
-                <AnimatePresence>
-                  {isOpen && (
-                    <m.img
-                      key="thumb"
-                      src={item.thumb}
-                      alt={item.name}
-                      className="services-thumb"
-                      aria-hidden="true"
-                      initial={{ clipPath: "inset(0% 0% 100% 0%)" }}
-                      animate={{ clipPath: "inset(0% 0% 0% 0%)", transition: { duration: 0.55, delay: 0.15, ease: EASE } }}
-                      exit={{ clipPath: "inset(0% 0% 100% 0%)", transition: { duration: 0.35, ease: EASE } }}
-                    />
-                  )}
-                </AnimatePresence>
+                {/* Always mounted — plain CSS transition off .is-open (see
+                    globals.css) instead of Framer Motion, so the reveal
+                    can never race the text's height animation or get
+                    tangled up with this item's own layout="position"
+                    projection. Also means the browser starts loading all
+                    three photos on first paint instead of on first tap. */}
+                <div className="services-thumb-wrap">
+                  <img src={item.thumb} alt={item.name} className="services-thumb" aria-hidden="true" />
+                </div>
               </Reveal>
             );
           })}

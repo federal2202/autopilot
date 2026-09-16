@@ -31,6 +31,17 @@
   --card: rgba(31, 31, 31, 0.035);
   --dot-color: rgba(31, 31, 31, 0.14);
 
+  /* ---- typography ----
+     System font stack in place of the loaded Fraunces/Space Grotesk web
+     fonts — same custom-property names so every existing
+     var(--font-fraunces)/var(--font-grotesk) reference in this file
+     resolves to the system stack with no further edits needed.
+     --font-geist stays wired to the local Geist font in layout.jsx. */
+  --font-system: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text",
+    "Helvetica Neue", Arial, sans-serif;
+  --font-fraunces: var(--font-system);
+  --font-grotesk: var(--font-system);
+
   /* ---- spacing scale (4px base) ---- */
   --sp-1: 4px;
   --sp-2: 8px;
@@ -855,8 +866,15 @@ button {
        transition actually needs (see Hero.jsx's `phase === "expand"`
        effect, which snaps this back to --vp-ratio the instant that
        phase starts, before capturing the FLIP's starting rect) — this
-       override only applies to the small merged/slides phases. */
-    width: auto;
+       override only applies to the small merged/slides phases.
+       `width` is spelled out as the same clamp() as `height`, not
+       `auto` + aspect-ratio: CSS transitions can't interpolate to/from
+       the `auto` keyword, so a `width: auto` here would make the box's
+       width snap to its aspect-ratio-derived value the instant `is-open`
+       lands instead of animating over the 0.7s below in lockstep with
+       .hero-loader-gap's own width transition — reading as the photo
+       "popping in" before the words have visibly finished separating. */
+    width: clamp(56px, 11vh, 96px);
     height: clamp(56px, 11vh, 96px);
     aspect-ratio: 1;
   }
@@ -1158,7 +1176,20 @@ section.showreel-section {
 /* Per-service photo, square corners, matching the reference's untreated
    photo crop. Pinned to the item's top-right corner (level with the
    title), independent of the text column's own height, instead of
-   trailing below the paragraph. */
+   trailing below the paragraph.
+
+   Reveal is a plain CSS transition on .is-open (added in ServicesList.jsx
+   whenever an item is the open one) instead of a Framer Motion animation.
+   It's always mounted — no AnimatePresence — so the browser starts
+   fetching/decoding all three photos on first paint instead of racing a
+   decode against the reveal, and there's no JS timer or layout-projection
+   system (ServicesList's `layout="position"` on .services-item) that a
+   photo's own reveal timing could get tangled up in: the delay below is
+   the browser's own transition-delay clock, immune to render jank. */
+.services-thumb-wrap {
+  display: contents;
+}
+
 .services-thumb {
   position: absolute;
   top: 26px;
@@ -1168,6 +1199,14 @@ section.showreel-section {
   object-fit: cover;
   background: #fff;
   pointer-events: none;
+  clip-path: inset(0% 0% 100% 0%);
+  transition: clip-path 0.35s cubic-bezier(0.65, 0, 0.35, 1);
+}
+
+.services-item.is-open .services-thumb {
+  clip-path: inset(0% 0% 0% 0%);
+  transition-duration: 0.55s;
+  transition-delay: 0.15s;
 }
 
 @media (max-width: 720px) {
@@ -1186,6 +1225,24 @@ section.showreel-section {
     min-height: 0;
   }
 
+  /* Stacked mobile layout: the photo sits in normal flow below the text,
+     so — unlike the pinned-corner desktop photo, whose space never moves
+     the text — its box has to grow too, or it pops in at full height the
+     instant it mounts. Gate that growth behind a transition-delay equal
+     to the text row's own expand duration (.services-details, 0.45s) so
+     the photo can never start claiming space until the text is done. */
+  .services-thumb-wrap {
+    display: block;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s cubic-bezier(0.65, 0, 0.35, 1);
+  }
+
+  .services-item.is-open .services-thumb-wrap {
+    max-height: 220px;
+    transition-delay: 0.45s;
+  }
+
   .services-thumb {
     position: static;
     display: block;
@@ -1193,6 +1250,12 @@ section.showreel-section {
     height: 44vw;
     max-height: 220px;
     margin: 16px 0 4px;
+    transition-duration: 0.4s;
+    transition-delay: 0s;
+  }
+
+  .services-item.is-open .services-thumb {
+    transition-delay: 0.45s;
   }
 }
 

@@ -32,6 +32,12 @@ const nextConfig = {
   turbopack: {
     root: __dirname,
   },
+  experimental: {
+    // Caps Turbopack's dev-server memory so it degrades gracefully instead of
+    // spiraling into sustained multi-core CPU usage when the cache grows large
+    // or the machine is under memory pressure from other apps.
+    turbopackMemoryLimit: 3 * 1024 * 1024 * 1024,
+  },
   async headers() {
     return [
       {
