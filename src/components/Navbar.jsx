@@ -11,14 +11,6 @@ const EASE = [0.65, 0, 0.35, 1];
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
-    onScroll();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
-  }, []);
 
   useEffect(() => {
     document.body.style.overflow = open ? "hidden" : "";
@@ -40,7 +32,7 @@ export default function Navbar() {
 
   return (
     <m.header
-      className={`navbar${scrolled ? " is-scrolled" : ""}`}
+      className="navbar"
       initial={reduceMotion ? false : { opacity: 0, y: -24 }}
       animate={{ opacity: 1, y: 0 }}
       transition={reduceMotion ? { duration: 0 } : { delay: HERO_REVEAL_MS / 1000, duration: 0.6, ease: EASE }}

@@ -12,6 +12,11 @@
   --peach: #fae7d5;
   --accent: #eb381c;
   --accent-2: #ff6b35;
+  /* Primary-button navy — sampled directly from the reference's own
+     "Let's talk" button (rgb(2,6,34) at its darkest, rgb(4,8,46) at its
+     lightest — a left-to-right gradient, not a flat fill). */
+  --navy: #030620;
+  --navy-light: #060c34;
   --emerald: #3ecf8e;
   --emerald-light: #6fe0ac;
   --emerald-dark: #1f8f5f;
@@ -322,15 +327,20 @@ button {
 
 /* ============ BUTTONS ============ */
 
-/* Fold-corner accent: a small triangular "tag" mark in the top-left and
-   bottom-right corners, echoing the reference's folded-paper-corner
-   buttons without literally copying them (no clip-path cut-corner shape
-   — that would clip its own pseudo-elements right along with it, since
-   clip-path masks everything painted through the element, corner marks
-   included). Instead the button keeps its normal rectangular hit area
-   and the marks sit on top as a translucent overlay — every `.btn`
-   variant gets it, tuned per variant below since a light mark reads
-   differently on --accent vs. on cream. */
+/* Fold-corner accent: a small "flag" mark in the top-left and
+   bottom-right corners — traced pixel-for-pixel from the reference's
+   own button (see DESIGN_DECISIONS.md/this session): a small square
+   filled solid, with the corner pointing at the button's *center*
+   rounded away with a radius equal to the square's own size. That's
+   what turns a plain square into the flag shape — a sharp point at the
+   button's own corner, curving smoothly inward — not a straight
+   diagonal clip-path cut (which is what this used to be; the straight
+   edge read as noticeably more angular than the reference's soft
+   curve). `overflow: hidden` on `.btn` isn't load-bearing for this
+   shape (border-radius never paints outside its own box the way
+   clip-path could), but stays in case any future variant needs it.
+   Every `.btn` variant gets the same shape, tuned per variant below
+   since a light mark reads differently on --navy vs. on cream. */
 .btn {
   position: relative;
   overflow: hidden;
@@ -360,41 +370,41 @@ button {
 .btn::before {
   top: 0;
   left: 0;
-  clip-path: polygon(0 0, 100% 0, 0 100%);
+  border-radius: 0 0 13px 0;
 }
 
 .btn::after {
   bottom: 0;
   right: 0;
-  clip-path: polygon(100% 100%, 100% 0, 0 100%);
+  border-radius: 13px 0 0 0;
 }
 
-/* Primary CTAs get the site's one accent color instead of plain ink —
-   previously every button (navbar, hero, offer, closing, contact) was
-   the same dark-on-cream as body text/links, which read as "there,
-   but not interesting." --accent (#eb381c) was already quietly present
-   sitewide as the ProcessSteps "KM 01" index color — this just makes
-   it the thing CTAs are actually built around, instead of one stray
-   accent color with no home. */
+/* Primary CTAs: matches the reference's own "Let's talk" button 1:1 —
+   sampled directly from it (see --navy/--navy-light above and the
+   corner-mark comment above) rather than reusing the site's existing
+   --ink. Previously this was the site's orange --accent (#eb381c);
+   --accent itself is untouched and still lives on sitewide (e.g.
+   ProcessSteps' "KM 01" index), it's just no longer what buttons are
+   built around. */
 .btn-primary {
-  background: var(--accent);
+  background: linear-gradient(120deg, var(--navy), var(--navy-light));
   color: var(--cream);
-  border: 1px solid var(--accent);
+  border: 1px solid var(--navy);
 }
 
 .btn-primary::before,
 .btn-primary::after {
-  background: rgba(245, 242, 243, 0.5);
+  background: var(--cream);
 }
 
 .btn-primary:hover {
   background: transparent;
-  color: var(--accent);
+  color: var(--navy);
 }
 
 .btn-primary:hover::before,
 .btn-primary:hover::after {
-  background: var(--accent);
+  background: var(--navy);
 }
 
 .btn-secondary {
@@ -499,22 +509,20 @@ button {
 
 /* ============ NAVBAR ============ */
 
+/* Always transparent, regardless of scroll position — per direct
+   request. There used to be an `.is-scrolled` variant (an opaque
+   blurred cream bar past 8px of scroll), driven by a scroll listener in
+   Navbar.jsx; both are gone now. Legibility over whatever's behind it
+   (the hero photo, later the page's own sections) rides entirely on
+   .navbar-link's text-shadow and the logo/CTA's own contrast — see
+   DESIGN_DECISIONS.md, "Navbar over a photo, not cream". */
 .navbar {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   z-index: 999;
-  transition: background 0.35s ease, border-color 0.35s ease;
-  border-bottom: 1px solid transparent;
   color: var(--ink);
-}
-
-.navbar.is-scrolled {
-  background: rgba(245, 242, 243, 0.82);
-  backdrop-filter: blur(16px) saturate(140%);
-  -webkit-backdrop-filter: blur(16px) saturate(140%);
-  border-bottom-color: rgba(31, 31, 31, 0.1);
 }
 
 .navbar-inner {
@@ -671,6 +679,35 @@ button {
   display: flex;
   align-items: flex-end;
   min-height: 100svh;
+  /* Shared with .hero-loader-word's font-size below and with the preview
+     frame/gap sizing further down — one source of truth so the photo's
+     box is always a fixed fraction of the actual rendered word size,
+     on every viewport, instead of two independently-tuned clamp()
+     ranges (px/vw for the text, px/vh for the box) that only happened
+     to line up at some widths and let the photo end up taller than the
+     word at others. */
+  --hero-word-size: clamp(52px, 11vw, 168px);
+  /* 0.66 sits comfortably inside the word's cap-height (uppercase,
+     line-height 0.96) across the whole font-family fallback stack, so
+     the box reads as clearly smaller than the text, not just barely. */
+  --hero-frame-h: calc(var(--hero-word-size) * 0.66);
+  /* The small preview's own width/height ratio — deliberately fixed,
+     not derived from --vp-ratio. On a phone, --vp-ratio is the
+     viewport's own portrait ratio (~0.45-0.5, taller than wide); tying
+     the preview to it would always render a tall, narrow sliver there,
+     never the wide landscape look the desktop's naturally-wide
+     --vp-ratio happens to give it. 1.72 is the source photos' own
+     native ratio (2400x1395), so the preview shows them essentially
+     uncropped on every device, phone included. This is only used for
+     the merged/slides preview below — the *expand* transition in
+     Hero.jsx snaps the box to the real --vp-ratio right before the FLIP
+     starts, which is what actually needs to match the viewport to
+     avoid re-cropping the photo as it grows fullscreen; going from this
+     fixed ratio to that one is one instant shape change at the exact
+     moment expand kicks off (already a big, fast, attention-grabbing
+     motion — see Hero.jsx's `phase === "expand"` effect), not a
+     sustained drift across the whole transition. */
+  --hero-frame-ratio: 1.72;
 }
 
 /* ---- cold-open loader: merged wordmark -> split -> 3-slide gap -> the
@@ -710,7 +747,7 @@ button {
   display: inline-block;
   overflow: hidden;
   font-family: var(--font-grotesk), var(--font-geist), sans-serif;
-  font-size: clamp(52px, 11vw, 168px);
+  font-size: var(--hero-word-size);
   font-weight: 700;
   letter-spacing: -2px;
   line-height: 0.96;
@@ -734,7 +771,11 @@ button {
 }
 
 .hero-loader-gap.is-open {
-  width: clamp(240px, 30vw, 420px);
+  /* Mirrors .hero-visual-frame.is-open's width exactly (same calc()) —
+     see that rule for why height, not width, is the driving dimension,
+     and see --hero-frame-ratio (.hero-section) for why this isn't the
+     raw --vp-ratio. */
+  width: calc(var(--hero-frame-h) * var(--hero-frame-ratio));
   margin: 0 clamp(14px, 2.4vw, 30px);
 }
 
@@ -768,22 +809,25 @@ button {
   transition: width 0.7s cubic-bezier(0.65, 0, 0.35, 1), height 0.7s cubic-bezier(0.65, 0, 0.35, 1);
 }
 
-/* `aspect-ratio: var(--vp-ratio)` (set to viewportWidth / viewportHeight)
-   is what actually kills the flicker: with `object-fit: cover`, the crop
-   window it computes depends only on the box's aspect ratio, so if that
-   ratio never changes between this small preview and the fullscreen box
-   (100vw × 100dvh — the viewport's own ratio, by definition) growing from
-   one to the other is a pure magnification with nothing to re-crop. A
-   plain `height: clamp(...)` alongside `width: clamp(...)` can't guarantee
-   this — the two clamps hit their min/max bounds independently depending
-   on the viewport, so the ratio only matched by coincidence in the
-   middle of both ranges. aspect-ratio keeps height locked to width
-   exactly, however width's clamp resolves. Once the manual FLIP (see
-   Hero.jsx) sets an explicit `height` inline for the fullscreen state,
-   that explicit value wins over aspect-ratio automatically — no special
-   handling needed for the handoff. */
+/* This preview box uses the SAME rectangular treatment on every
+   viewport, phone included — no square special case. height is the
+   driving dimension (capped to --hero-frame-h so the box can never
+   render taller than the word next to it — see .hero-section) and
+   width is computed from it via the fixed --hero-frame-ratio (see
+   .hero-section for why it's a fixed ratio, not the real --vp-ratio).
+   Both stay explicit lengths (never `auto`), so the transition below
+   can actually interpolate them instead of snapping — an earlier
+   `width: auto` + aspect-ratio version of the mobile-only rule this
+   replaced made the photo pop in before the words finished separating.
+   Once the manual FLIP (see Hero.jsx) sets an explicit `height` inline
+   for the fullscreen state, that explicit value wins over this rule
+   automatically, and Hero.jsx re-derives this box's width from the
+   real --vp-ratio right before measuring the FLIP's starting rect —
+   see the comment there — so --hero-frame-ratio above only ever
+   affects this small preview, never the fullscreen crop. */
 .hero-visual-frame.is-open {
-  width: clamp(240px, 30vw, 420px);
+  height: var(--hero-frame-h);
+  width: calc(var(--hero-frame-h) * var(--hero-frame-ratio));
 }
 
 /* object-fit: cover, deliberately — always fills the box edge-to-edge on
@@ -858,29 +902,13 @@ button {
     padding-bottom: 56px;
   }
 
-  .hero-visual-frame.is-open {
-    /* Square, not the viewport's own portrait ratio (~0.46 via
-       --vp-ratio) — sized to sit inline with the text like a big
-       glyph, not shaped like a sliver of the phone screen. The base
-       rule's `aspect-ratio: var(--vp-ratio, 1.5)` is what the *expand*
-       transition actually needs (see Hero.jsx's `phase === "expand"`
-       effect, which snaps this back to --vp-ratio the instant that
-       phase starts, before capturing the FLIP's starting rect) — this
-       override only applies to the small merged/slides phases.
-       `width` is spelled out as the same clamp() as `height`, not
-       `auto` + aspect-ratio: CSS transitions can't interpolate to/from
-       the `auto` keyword, so a `width: auto` here would make the box's
-       width snap to its aspect-ratio-derived value the instant `is-open`
-       lands instead of animating over the 0.7s below in lockstep with
-       .hero-loader-gap's own width transition — reading as the photo
-       "popping in" before the words have visibly finished separating. */
-    width: clamp(56px, 11vh, 96px);
-    height: clamp(56px, 11vh, 96px);
-    aspect-ratio: 1;
-  }
-
+  /* No more width/aspect-ratio override here: the base .hero-visual-frame
+     .is-open rule (height: var(--hero-frame-h), width derived from
+     --vp-ratio) already gives the same rectangular shape as desktop on
+     any viewport — a mobile-only square override used to replace it.
+     Only the gap's margin still needs a smaller mobile value; its width
+     comes from the same base rule as the frame's, unchanged. */
   .hero-loader-gap.is-open {
-    width: clamp(56px, 11vh, 96px);
     margin: 0 clamp(8px, 2vw, 16px);
   }
 }
@@ -910,17 +938,29 @@ button {
   line-height: 1.15;
   text-transform: uppercase;
   text-align: center;
-  /* Plain solid color, no mix-blend-mode, no text-shadow — the adaptive
+  /* Plain solid color, no mix-blend-mode, no text-shadow — the earlier
      per-pixel contrast (and every reveal trick built to work around its
      isolation rules: veils, delayed color swaps) kept surfacing new
      flashes of its own, each smaller than the last but never fully
-     gone. Traded the "auto-contrast" effect away entirely so the
-     element is simple enough to just fade in normally (see Hero.jsx —
-     the whole .hero-statement now animates with plain framer-motion
-     opacity, which was never safe to do while this depended on
-     mix-blend-mode). Relies on .hero-visual-scrim's own darkening for
-     legibility instead of inverting per pixel. */
+     gone, because it had to keep re-evaluating every frame. This
+     default assumes the common case (the statement sits over the
+     hoodie, which is mid-to-dark) so the fade-in (framer-motion
+     opacity, only safe now that nothing here depends on mix-blend-mode)
+     never has a "wrong" frame to correct away from — see .is-on-light
+     below and the sampling effect in Hero.jsx for the actual adaptive
+     part: a single JS canvas read of the photo, done once right as the
+     photo settles (its position relative to this text never changes
+     after that, since both scroll together as one section), not a
+     continuously-recomputed blend. */
   color: var(--cream);
+  transition: color 0.3s ease;
+}
+
+/* Set once by Hero.jsx after sampling the photo pixels actually behind
+   this element — see the comment on .hero-statement-line above. Only
+   flips when the sampled backdrop is closer to --cream than --ink. */
+.hero-statement.is-on-light .hero-statement-line {
+  color: var(--ink);
 }
 
 /* ============ INTRO (stat column + about statement + media row) ============ */

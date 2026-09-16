@@ -99,8 +99,12 @@ export default function Hero() {
   const [phase, setPhase] = useState(() => (prefersReducedMotion() ? "settled" : "merged"));
   const [slide, setSlide] = useState(() => (prefersReducedMotion() ? SLIDES.length - 1 : 0));
   const [showStatement, setShowStatement] = useState(prefersReducedMotion);
+  // null until sampled (renders as the .hero-statement-line default,
+  // i.e. cream-on-dark) — see the sampling effect below.
+  const [statementOnLight, setStatementOnLight] = useState(false);
   const frameRef = useRef(null);
   const loaderRef = useRef(null);
+  const statementRef = useRef(null);
 
   // The small preview's aspect ratio has to equal the viewport's aspect
   // ratio exactly, or growing it into the fullscreen box (100vw x 100dvh
@@ -111,11 +115,21 @@ export default function Hero() {
   // property that `.hero-visual-frame`'s `aspect-ratio` reads, which
   // keeps height an exact function of width (however width ends up being
   // computed) for as long as no explicit height is set later.
+  //
+  // Set on .hero-section rather than on the frame element itself, since
+  // --vp-ratio describes the whole hero, not just the frame: the base
+  // .hero-visual-frame rule and Hero.jsx's own reads of --vp-ratio below
+  // are both descendants of .hero-section either way, but scoping it to
+  // .hero-section (rather than a single, more specific descendant) is
+  // what makes it safe for any future rule elsewhere in the hero to read
+  // too, without silently falling back to the 1.5 default the way an
+  // earlier version of this effect (and of --hero-frame-ratio, which
+  // used to derive from --vp-ratio) did for .hero-loader-gap.
   useEffect(() => {
-    const el = frameRef.current;
-    if (!el) return;
+    const section = frameRef.current?.closest(".hero-section");
+    if (!section) return;
     const applyRatio = () => {
-      el.style.setProperty("--vp-ratio", String(window.innerWidth / window.innerHeight));
+      section.style.setProperty("--vp-ratio", String(window.innerWidth / window.innerHeight));
     };
     applyRatio();
     window.addEventListener("resize", applyRatio);
@@ -147,22 +161,23 @@ export default function Hero() {
     const el = frameRef.current;
     if (!el) return;
 
-    // On mobile the merged/slides phases show a small SQUARE preview
-    // (the "@media (max-width: 640px)" override in globals.css) instead
-    // of --vp-ratio's shape, so it reads as sitting inline with the text
-    // rather than a sliver of the phone screen. But the FLIP below grows
-    // into 100vw x 100dvh (the viewport's own ratio) by transitioning
-    // width/height independently, which only avoids re-cropping the
-    // photo *throughout* that transition if the box's ratio is constant
-    // the whole time (see the long comment on the base .hero-visual-frame
-    // rule) — starting the FLIP from a square rect would instead drift
-    // the crop continuously across the whole ~1s expand. Snapping the
-    // shape back to --vp-ratio synchronously, right here before the
-    // starting rect is measured, trades that sustained drift for one
-    // instant shape pop at the exact moment the expand kicks off (already
-    // a big, fast, attention-grabbing motion) — far less noticeable than
-    // a full second of visible re-cropping.
-    el.style.aspectRatio = "var(--vp-ratio, 1.5)";
+    // .hero-visual-frame.is-open (globals.css) deliberately gives the
+    // preview a fixed width:height ratio (--hero-frame-ratio, the source
+    // photos' own ratio) instead of the real --vp-ratio — see that rule
+    // for why. That means the preview's rendered shape can differ from
+    // the real --vp-ratio, so its width has to be explicitly snapped to match
+    // height * the *true* ratio before the FLIP below measures its
+    // starting rect. Setting `aspect-ratio` alone can't do this: both
+    // width and height are already explicit lengths from that CSS rule,
+    // and aspect-ratio only fills in a dimension left as `auto`.
+    // Growing into 100vw x 100dvh only avoids re-cropping the photo
+    // *throughout* that transition if the box's ratio is constant the
+    // whole time (see the long comment on the base .hero-visual-frame
+    // rule) — this is what keeps that true regardless of how the
+    // preview itself was shaped a moment ago.
+    const trueVpRatio =
+      parseFloat(getComputedStyle(el).getPropertyValue("--vp-ratio")) || window.innerWidth / window.innerHeight;
+    el.style.width = `${el.getBoundingClientRect().height * trueVpRatio}px`;
     void el.offsetWidth;
 
     const rect = el.getBoundingClientRect();
@@ -246,6 +261,67 @@ export default function Hero() {
     const t = setTimeout(() => setShowStatement(true), STATEMENT_DELAY);
     return () => clearTimeout(t);
   }, [phase, showStatement]);
+
+  // Adaptive contrast for .hero-statement — done as a single, one-time
+  // sample of the photo's actual pixels (not a continuous mix-blend-mode
+  // read, which is a closed chapter for this element — see
+  // .hero-statement-line in globals.css). Safe to run only once because
+  // the statement's position relative to the photo never changes after
+  // this: both are part of the same section and scroll together, so
+  // there's no ongoing relationship to keep re-evaluating, only a
+  // resize (handled below) can invalidate it.
+  useEffect(() => {
+    if (phase !== "settled") return;
+    const frameEl = frameRef.current;
+    const statementEl = statementRef.current;
+    if (!frameEl || !statementEl) return;
+
+    const sample = () => {
+      const img = frameEl.querySelector('img[src="/stas.JPG"]');
+      if (!img || !img.complete || !img.naturalWidth) return;
+
+      // Reproduces the CSS `object-fit: cover` + `object-position:
+      // center 18%` mapping (see the SLIDES render below) to find which
+      // rectangle of the *source* photo is actually rendered behind
+      // the statement's own on-screen rectangle, rather than guessing.
+      const frameRect = frameEl.getBoundingClientRect();
+      const stRect = statementEl.getBoundingClientRect();
+      if (!frameRect.width || !frameRect.height || !stRect.width || !stRect.height) return;
+
+      const scale = Math.max(frameRect.width / img.naturalWidth, frameRect.height / img.naturalHeight);
+      const drawW = img.naturalWidth * scale;
+      const drawH = img.naturalHeight * scale;
+      const offsetX = (drawW - frameRect.width) * 0.5; // object-position X: center
+      const offsetY = (drawH - frameRect.height) * 0.18; // object-position Y: 18%
+
+      const srcX = (stRect.left - frameRect.left + offsetX) / scale;
+      const srcY = (stRect.top - frameRect.top + offsetY) / scale;
+      const srcW = stRect.width / scale;
+      const srcH = stRect.height / scale;
+
+      const canvas = document.createElement("canvas");
+      canvas.width = 16;
+      canvas.height = 16;
+      const ctx = canvas.getContext("2d", { willReadFrequently: true });
+      try {
+        ctx.drawImage(img, srcX, srcY, srcW, srcH, 0, 0, 16, 16);
+        const { data } = ctx.getImageData(0, 0, 16, 16);
+        let sum = 0;
+        for (let i = 0; i < data.length; i += 4) {
+          sum += 0.2126 * data[i] + 0.7152 * data[i + 1] + 0.0722 * data[i + 2];
+        }
+        setStatementOnLight(sum / (data.length / 4) > 150);
+      } catch {
+        // Same-origin static asset — this shouldn't throw, but a failed
+        // read just keeps the safe cream-on-dark default rather than
+        // ever leaving the text unreadable.
+      }
+    };
+
+    sample();
+    window.addEventListener("resize", sample);
+    return () => window.removeEventListener("resize", sample);
+  }, [phase]);
 
   const introVisible = phase !== "settled";
   const isFullscreen = phase === "expand" || phase === "settled";
@@ -338,7 +414,8 @@ export default function Hero() {
                   passed, so it doesn't land in the same beat as the
                   scrim/navbar reveal above. */}
               <m.div
-                className="hero-statement"
+                ref={statementRef}
+                className={`hero-statement${statementOnLight ? " is-on-light" : ""}`}
                 initial={{ opacity: 0 }}
                 animate={{ opacity: showStatement ? 1 : 0 }}
                 transition={{ duration: 0.8, ease: EASE }}
