@@ -1,15 +1,30 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { m } from "framer-motion";
 import { faq } from "@/data/content";
 import { PlusIcon } from "./icons";
 import Reveal from "./Reveal";
 
 const EASE = [0.65, 0, 0.35, 1];
+const MOBILE_QUERY = "(max-width: 720px)";
 
 export default function Faq() {
   const [openIndex, setOpenIndex] = useState(null);
+  // See the matching check in ServicesList.jsx: framer-motion's
+  // height:auto animation still does a forced-layout measurement even
+  // at duration 0, but skips animating that reflow across many frames —
+  // on phones that one-time snap is what actually reads as responsive
+  // instead of laggy.
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia(MOBILE_QUERY);
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   return (
     <section id="faq" className="section section-cream">
@@ -46,7 +61,7 @@ export default function Faq() {
                   className="faq-details"
                   initial={false}
                   animate={{ height: isOpen ? "auto" : 0 }}
-                  transition={{ duration: 0.4, ease: EASE }}
+                  transition={{ duration: isMobile ? 0 : 0.4, ease: EASE }}
                 >
                   <p className="faq-answer">{item.answer}</p>
                 </m.div>

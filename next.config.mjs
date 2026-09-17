@@ -32,12 +32,12 @@ const nextConfig = {
   turbopack: {
     root: __dirname,
   },
-  experimental: {
-    // Caps Turbopack's dev-server memory so it degrades gracefully instead of
-    // spiraling into sustained multi-core CPU usage when the cache grows large
-    // or the machine is under memory pressure from other apps.
-    turbopackMemoryLimit: 3 * 1024 * 1024 * 1024,
-  },
+  // `experimental.turbopackMemoryLimit` (a hard byte cap, added to stop the
+  // dev cache from spiraling into sustained multi-core CPU usage) was
+  // removed in Next 16.3 — Turbopack now defaults to
+  // `turbopackMemoryEviction: "auto"`, which proactively evicts cache
+  // memory under pressure on its own, so no explicit config is needed here
+  // any more.
   async headers() {
     return [
       {

@@ -154,6 +154,20 @@ button {
   }
 }
 
+/* CustomCursor.jsx already skips its own positioning logic on coarse/no-
+   hover pointers, but the two spans below are still mounted in the DOM
+   on every device — this is the actual guarantee that nothing paints on
+   phones/tablets: unconditional, independent of any JS feature-detect
+   timing, and covers touchscreen laptops too (`pointer: coarse` alone,
+   without requiring `hover: none`, in case a device reports one but not
+   the other). */
+@media (pointer: coarse), (hover: none) {
+  .cursor-dot,
+  .cursor-ring {
+    display: none !important;
+  }
+}
+
 .cursor-dot,
 .cursor-ring {
   position: fixed;
@@ -1265,22 +1279,28 @@ section.showreel-section {
     min-height: 0;
   }
 
-  /* Stacked mobile layout: the photo sits in normal flow below the text,
-     so — unlike the pinned-corner desktop photo, whose space never moves
-     the text — its box has to grow too, or it pops in at full height the
-     instant it mounts. Gate that growth behind a transition-delay equal
-     to the text row's own expand duration (.services-details, 0.45s) so
-     the photo can never start claiming space until the text is done. */
+  /* Stacked mobile layout: the photo sits in normal flow below the
+     text. This used to grow in with a delayed max-height/clip-path
+     choreography (synced to .services-details' own height animation
+     and gated by a transition-delay) — on top of framer-motion's
+     height:auto measurement and this item's layout="position"
+     projection (ServicesList.jsx), that was three separate
+     layout-affecting animations running at once on every tap, which is
+     exactly what read as jank/lag on phones. Both `layout` and the
+     height animation are skipped on this breakpoint in JS (see
+     ServicesList.jsx's `isMobile` check); this side (the CSS reveal)
+     is made instant here to match — no transition at all, so opening
+     an item is a single, cheap layout pass instead of several
+     concurrent animated ones. */
   .services-thumb-wrap {
     display: block;
     max-height: 0;
     overflow: hidden;
-    transition: max-height 0.35s cubic-bezier(0.65, 0, 0.35, 1);
+    transition: none;
   }
 
   .services-item.is-open .services-thumb-wrap {
     max-height: 220px;
-    transition-delay: 0.45s;
   }
 
   .services-thumb {
@@ -1290,12 +1310,7 @@ section.showreel-section {
     height: 44vw;
     max-height: 220px;
     margin: 16px 0 4px;
-    transition-duration: 0.4s;
-    transition-delay: 0s;
-  }
-
-  .services-item.is-open .services-thumb {
-    transition-delay: 0.45s;
+    transition: none;
   }
 }
 

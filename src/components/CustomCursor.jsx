@@ -2,9 +2,13 @@
 
 import { useEffect, useRef } from "react";
 
-// Fine-pointer only — touch devices never get the "has-custom-cursor" class
-// (added below) or these nodes rendered, so nothing hides the real cursor
-// on phones/tablets.
+// Fine-pointer only — the effect below bails out immediately on
+// touch/coarse pointers, so the "has-custom-cursor" class (which hides
+// the real cursor) never gets added there. The two spans are still
+// mounted regardless (same on every device, for hydration simplicity)
+// — see the `@media (pointer: coarse), (hover: none)` rule in
+// globals.css, which is the actual guarantee they never paint on
+// phones/tablets, independent of this effect's own timing.
 export default function CustomCursor() {
   const dotRef = useRef(null);
   const ringRef = useRef(null);

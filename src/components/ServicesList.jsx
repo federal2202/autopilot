@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { m } from "framer-motion";
 import { offer } from "@/data/content";
 import { ArrowIcon } from "./icons";
@@ -8,9 +8,29 @@ import Reveal from "./Reveal";
 import Magnetic from "./Magnetic";
 
 const EASE = [0.65, 0, 0.35, 1];
+// Matches the `@media (max-width: 720px)` breakpoint in globals.css that
+// switches this section to its stacked mobile layout.
+const MOBILE_QUERY = "(max-width: 720px)";
 
 export default function ServicesList() {
   const [openIndex, setOpenIndex] = useState(0);
+  // Below 720px, `layout="position"` (framer-motion projection,
+  // recalculated for every sibling item on any one item's open/close)
+  // and the .services-details height animation are both skipped —
+  // together with .services-thumb's own transition (see globals.css'
+  // matching breakpoint), those were three concurrent layout-affecting
+  // animations on every tap, which is what actually read as jank on
+  // phones, not any one of them alone. Defaults to false so desktop's
+  // first paint is unaffected; only matters once the effect below runs.
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const mq = window.matchMedia(MOBILE_QUERY);
+    const update = () => setIsMobile(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   return (
     <section id="oferta" className="section section-black">
@@ -31,7 +51,7 @@ export default function ServicesList() {
                 as="div"
                 className={`services-item${isOpen ? " is-open" : ""}`}
                 onMouseEnter={() => setOpenIndex(i)}
-                layout="position"
+                layout={isMobile ? undefined : "position"}
               >
                 <button
                   type="button"
@@ -50,7 +70,7 @@ export default function ServicesList() {
                   className="services-details"
                   initial={false}
                   animate={{ height: isOpen ? "auto" : 0 }}
-                  transition={{ duration: 0.45, ease: EASE }}
+                  transition={{ duration: isMobile ? 0 : 0.45, ease: EASE }}
                 >
                   <div className="services-details-grid">
                     <span aria-hidden="true" />
