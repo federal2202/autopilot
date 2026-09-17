@@ -10,6 +10,14 @@ function lerp(a, b, t) {
   return a + (b - a) * t;
 }
 
+// Fixed navbar's own rendered height (46px logo + 22px padding top/bottom
+// — see .navbar-inner in globals.css) plus a little breathing room; same
+// value SmoothScroll.jsx's anchor-scroll offset uses for the same reason.
+// The navbar sits at z-index 999 with no background of its own, so
+// without this the parked video's top edge would land right at (or
+// above) the viewport top and read as sitting underneath/behind it.
+const NAVBAR_CLEARANCE = 96;
+
 // The video's "real" home — full container width, 16:9. It renders here at
 // natural size from the very first paint (no JS required to look correct),
 // and Intro.jsx's small box further up the page is just an empty slot
@@ -108,8 +116,10 @@ export default function Showreel() {
       // out the rest of the scroll with nothing to look at. Instead it
       // parks centered in the viewport and stays there until the big
       // box's own natural position rises up to meet it, then hands off
-      // to tracking the box directly, seamlessly.
-      const pinnedY = (window.innerHeight - h) / 2;
+      // to tracking the box directly, seamlessly. Centered in the space
+      // *below* the navbar, not the full viewport, so a tall/wide video
+      // never parks with its top edge under the fixed navbar.
+      const pinnedY = NAVBAR_CLEARANCE + (window.innerHeight - NAVBAR_CLEARANCE - h) / 2;
 
       // The growth's *starting* Y is the slot's live `top` — valid for the
       // entire growth phase now, since growth only runs while

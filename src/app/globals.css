@@ -341,20 +341,17 @@ button {
 
 /* ============ BUTTONS ============ */
 
-/* Fold-corner accent: a small "flag" mark in the top-left and
-   bottom-right corners — traced pixel-for-pixel from the reference's
-   own button (see DESIGN_DECISIONS.md/this session): a small square
-   filled solid, with the corner pointing at the button's *center*
-   rounded away with a radius equal to the square's own size. That's
-   what turns a plain square into the flag shape — a sharp point at the
-   button's own corner, curving smoothly inward — not a straight
-   diagonal clip-path cut (which is what this used to be; the straight
-   edge read as noticeably more angular than the reference's soft
-   curve). `overflow: hidden` on `.btn` isn't load-bearing for this
-   shape (border-radius never paints outside its own box the way
-   clip-path could), but stays in case any future variant needs it.
-   Every `.btn` variant gets the same shape, tuned per variant below
-   since a light mark reads differently on --navy vs. on cream. */
+/* Fold-corner accent: a small "flag" mark set IN from the top-left and
+   bottom-right corners — shape/position traced from the reference's own
+   button, sized down further from that trace per direct request (the
+   1:1-traced 15px/8px version still read as too heavy in practice).
+   Each mark is a small square filled solid, with the corner pointing at
+   the button's *center* rounded away with a radius equal to the
+   square's own size — that's what turns a plain square into the flag
+   shape, a sharp point on the mark's own corner nearest the button's
+   edge, curving smoothly inward toward the center. Every `.btn` variant
+   gets the same shape, tuned per variant below since a light mark reads
+   differently on --navy vs. on cream. */
 .btn {
   position: relative;
   overflow: hidden;
@@ -375,22 +372,22 @@ button {
 .btn::after {
   content: "";
   position: absolute;
-  width: 13px;
-  height: 13px;
+  width: 8px;
+  height: 8px;
   pointer-events: none;
   transition: background 0.3s ease;
 }
 
 .btn::before {
-  top: 0;
-  left: 0;
-  border-radius: 0 0 13px 0;
+  top: 6px;
+  left: 6px;
+  border-radius: 0 0 8px 0;
 }
 
 .btn::after {
-  bottom: 0;
-  right: 0;
-  border-radius: 13px 0 0 0;
+  bottom: 6px;
+  right: 6px;
+  border-radius: 8px 0 0 0;
 }
 
 /* Primary CTAs: matches the reference's own "Let's talk" button 1:1 —
@@ -434,6 +431,34 @@ button {
 
 .btn-secondary:hover {
   border-color: var(--accent);
+}
+
+/* Solid orange fill + white text — for the primary CTA on black-
+   background sections (ServicesList, Closing) instead of the navy fill
+   .btn-primary uses elsewhere, per direct request (an outlined/
+   transparent version of this was tried first and rejected — orange
+   needs to be the fill, not just an accent). Inverts to transparent
+   with orange text/border on hover, mirroring .btn-primary's own
+   hover-invert pattern. */
+.btn-accent {
+  background: var(--accent);
+  color: var(--white);
+  border: 1px solid var(--accent);
+}
+
+.btn-accent::before,
+.btn-accent::after {
+  background: var(--white);
+}
+
+.btn-accent:hover {
+  background: transparent;
+  color: var(--accent);
+}
+
+.btn-accent:hover::before,
+.btn-accent:hover::after {
+  background: var(--accent);
 }
 
 .btn-ghost {

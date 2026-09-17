@@ -100,7 +100,7 @@ export default function ServicesList() {
 
         <Reveal delay={0.2} className="offer-cta-wrap">
           <Magnetic>
-            <a href={offer.cta.href} className="btn btn-primary">
+            <a href={offer.cta.href} className="btn btn-accent">
               {offer.cta.label}
               <ArrowIcon style={{ width: 16, height: 16 }} />
             </a>

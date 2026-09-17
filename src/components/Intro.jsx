@@ -12,6 +12,12 @@ export default function Intro() {
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
+    // See the matching comment in PinnedTagline.jsx: without this guard,
+    // Strict Mode's dev-only double-mount lets two separate
+    // SplitText+ScrollTrigger instances end up racing on the same
+    // element, since the first mount's cleanup runs before its async
+    // import resolves and so never actually reverts anything.
+    let cancelled = false;
     let ctx;
     let split;
 
@@ -21,6 +27,7 @@ export default function Intro() {
         import("gsap/ScrollTrigger"),
         import("gsap/SplitText"),
       ]);
+      if (cancelled) return;
       gsap.registerPlugin(ScrollTrigger, SplitText);
 
       ctx = gsap.context(() => {
@@ -46,6 +53,7 @@ export default function Intro() {
     })();
 
     return () => {
+      cancelled = true;
       split?.revert();
       ctx?.revert();
     };

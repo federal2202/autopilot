@@ -15,6 +15,21 @@ export default function PinnedTagline() {
   useEffect(() => {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
+    // React's Strict Mode (on by default in Next.js dev) mounts every
+    // component twice, running this effect and its cleanup back-to-back
+    // before the async import below has any chance to resolve — so the
+    // *first* run's cleanup always finds `ctx`/`split` still undefined
+    // and reverts nothing, while the *second* run's async work lands on
+    // top a moment later. Without this `cancelled` guard, both runs'
+    // async callbacks eventually execute, each building its own SplitText
+    // + ScrollTrigger pin on the very same section — two pins racing to
+    // control one element is exactly what read as the text going blank
+    // or stuck partway through its reveal (dev-only; a real unmount only
+    // ever runs an effect once, so production isn't affected). Setting
+    // `cancelled` in the first run's cleanup makes its still-pending
+    // import a no-op once it resolves, leaving only the second, real
+    // mount's split/pin ever active.
+    let cancelled = false;
     let ctx;
     let split;
 
@@ -24,6 +39,7 @@ export default function PinnedTagline() {
         import("gsap/ScrollTrigger"),
         import("gsap/SplitText"),
       ]);
+      if (cancelled) return;
       gsap.registerPlugin(ScrollTrigger, SplitText);
 
       ctx = gsap.context(() => {
@@ -46,6 +62,7 @@ export default function PinnedTagline() {
     })();
 
     return () => {
+      cancelled = true;
       split?.revert();
       ctx?.revert();
     };

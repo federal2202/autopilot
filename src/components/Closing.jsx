@@ -18,7 +18,7 @@ export default function Closing() {
         </Reveal>
         <Reveal delay={0.24}>
           <Magnetic>
-            <a href={closing.cta.href} className="btn btn-primary">
+            <a href={closing.cta.href} className="btn btn-accent">
               {closing.cta.label}
               <ArrowIcon style={{ width: 16, height: 16 }} />
             </a>
