@@ -43,7 +43,13 @@ export default function ServicesList() {
 
         <div className="services-list">
           {offer.items.map((item, i) => {
-            const isOpen = openIndex === i;
+            // On mobile there's no hover to reveal that these rows are
+            // even interactive, so a visitor who never taps one would
+            // otherwise never see the photo/description for [02] or
+            // [03] at all — open every item by default there instead of
+            // just the first. Desktop keeps the single-open,
+            // hover-to-switch behavior unchanged.
+            const isOpen = isMobile ? true : openIndex === i;
             return (
               <Reveal
                 key={item.name}
