@@ -44,7 +44,12 @@ export default function Navbar() {
 
         <nav className="navbar-links" aria-label="Nawigacja główna">
           {navLinks.map((link) => (
-            <a key={link.href} href={link.href} className="navbar-link">
+            <a
+              key={link.href}
+              href={link.href}
+              className="navbar-link"
+              {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+            >
               {link.label}
             </a>
           ))}
@@ -70,7 +75,13 @@ export default function Navbar() {
       <div className={`mobile-menu${open ? " is-open" : ""}`}>
         <div className="mobile-menu-inner">
           {navLinks.map((link) => (
-            <a key={link.href} href={link.href} className="mobile-link" onClick={() => setOpen(false)}>
+            <a
+              key={link.href}
+              href={link.href}
+              className="mobile-link"
+              onClick={() => setOpen(false)}
+              {...(link.external ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+            >
               {link.label}
             </a>
           ))}

@@ -1609,6 +1609,13 @@ section.showreel-section {
   margin: -12px -4px;
 }
 
+.contact-links-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 16px;
+}
+
 .contact-phone-card {
   display: flex;
   align-items: center;
@@ -1618,6 +1625,11 @@ section.showreel-section {
   max-width: 340px;
   margin: 0 auto;
   transition: border-color 0.3s ease;
+}
+
+.contact-links-row .contact-phone-card {
+  max-width: 300px;
+  margin: 0;
 }
 
 .contact-phone-card:hover {
@@ -1653,6 +1665,122 @@ section.showreel-section {
   align-items: center;
   padding: 10px 0;
   margin: -10px 0;
+}
+
+.contact-partner-note {
+  margin-top: var(--sp-6);
+  text-align: center;
+  font-size: 13px;
+  color: #9da3aa;
+}
+
+/* ============ CALL WIDGET (floating message notification) ============ */
+
+/* Deliberately a light "OS notification" card rather than the site's own
+   navy/orange button language — a message toast reads as one regardless of
+   which section (cream or black) it's floating over, and the whole point
+   is that it looks like an incoming message, not another CTA button. */
+.call-widget {
+  position: fixed;
+  right: 20px;
+  bottom: 20%;
+  z-index: 950;
+  display: flex;
+  align-items: flex-start;
+  gap: 4px;
+  width: 300px;
+  background: var(--cream);
+  border: 1px solid rgba(31, 31, 31, 0.1);
+  border-radius: 14px;
+  box-shadow: 0 16px 40px rgba(15, 15, 15, 0.22);
+}
+
+.call-widget-link {
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 14px 8px 14px 14px;
+  color: var(--ink);
+  flex: 1;
+  min-width: 0;
+}
+
+.call-widget-avatar-wrap {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.call-widget-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  object-fit: cover;
+  display: block;
+}
+
+.call-widget-online {
+  position: absolute;
+  right: -1px;
+  bottom: -1px;
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  background: var(--emerald);
+  border: 2px solid var(--cream);
+}
+
+.call-widget-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  min-width: 0;
+  padding-top: 1px;
+}
+
+.call-widget-name {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.call-widget-message {
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--body-text);
+}
+
+.call-widget-number {
+  margin-top: 2px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent);
+}
+
+.call-widget-close {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  width: 26px;
+  height: 26px;
+  margin: 10px 10px 0 0;
+  border-radius: 50%;
+  color: var(--muted);
+  transition: color 0.2s ease, background 0.2s ease;
+}
+
+.call-widget-close:hover {
+  color: var(--ink);
+  background: var(--card);
+}
+
+@media (max-width: 480px) {
+  .call-widget {
+    left: 12px;
+    right: 12px;
+    bottom: 20%;
+    width: auto;
+  }
 }
 
 /* ============ FOOTER ============ */
@@ -1700,6 +1828,16 @@ section.showreel-section {
   font-size: 11px;
   color: #4c4f53;
   opacity: 0.75;
+}
+
+.footer-partner-link {
+  color: #9da3aa;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.footer-partner-link:hover {
+  color: #f4f5f6;
 }
 
 /* ============ MARQUEE (infinite ticker) ============ */

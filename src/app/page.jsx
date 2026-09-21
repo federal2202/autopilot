@@ -10,6 +10,7 @@ import Faq from "@/components/Faq";
 import Closing from "@/components/Closing";
 import Contact from "@/components/Contact";
 import Footer from "@/components/Footer";
+import CallWidget from "@/components/CallWidget";
 
 export default function Home() {
   return (
@@ -28,6 +29,7 @@ export default function Home() {
         <Contact />
       </main>
       <Footer />
+      <CallWidget />
     </>
   );
 }

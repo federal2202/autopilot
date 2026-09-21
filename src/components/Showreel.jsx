@@ -174,7 +174,33 @@ export default function Showreel() {
     // with no position ever applied.
     render();
 
+    // The loop above re-measures two elements via getBoundingClientRect()
+    // on every single animation frame for as long as this component stays
+    // mounted — by design (see the long comment above), but that's also a
+    // real, permanent background cost that keeps running at 60fps whether
+    // or not this section is anywhere near the viewport (e.g. the visitor
+    // is reading the FAQ or Contact section far below). An
+    // IntersectionObserver on the big box, with a generous rootMargin so
+    // it's already active well before the grow/park/track sequence would
+    // actually need to move anything and stays active a while after,
+    // pauses that loop outside that range without changing any of the
+    // visible behavior inside it.
+    const observer = new IntersectionObserver(
+      (entries) => {
+        const active = entries[0]?.isIntersecting;
+        if (active) {
+          if (rafId === null) render();
+        } else if (rafId !== null) {
+          cancelAnimationFrame(rafId);
+          rafId = null;
+        }
+      },
+      { rootMargin: "150% 0px 150% 0px" }
+    );
+    observer.observe(bigBox);
+
     return () => {
+      observer.disconnect();
       if (rafId) cancelAnimationFrame(rafId);
       curX = curY = curW = curH = null;
       video.style.position = "";

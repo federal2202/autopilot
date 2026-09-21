@@ -1,5 +1,5 @@
-import { contact } from "@/data/content";
-import { MailIcon, PhoneIcon, ArrowIcon } from "./icons";
+import { contact, footer } from "@/data/content";
+import { MailIcon, PhoneIcon, InstagramIcon, ArrowIcon } from "./icons";
 import Reveal from "./Reveal";
 
 export default function Contact() {
@@ -28,16 +28,51 @@ export default function Contact() {
           </a>
         </Reveal>
 
-        <Reveal delay={0.08} className="glass-card contact-phone-card">
-          <span className="contact-phone-icon">
-            <PhoneIcon />
-          </span>
-          <div>
-            <div className="contact-phone-name">{contact.phone.name}</div>
-            <a href={`tel:${contact.phone.number}`} className="contact-phone-number">
-              {contact.phone.display}
-            </a>
-          </div>
+        <div className="contact-links-row">
+          <Reveal delay={0.08} className="glass-card contact-phone-card">
+            <span className="contact-phone-icon">
+              <PhoneIcon />
+            </span>
+            <div>
+              <div className="contact-phone-name">{contact.phone.name}</div>
+              <a href={`tel:${contact.phone.number}`} className="contact-phone-number">
+                {contact.phone.display}
+              </a>
+            </div>
+          </Reveal>
+
+          {/* Gated on contact.instagram (content.js) so no dead "#" link ever
+              ships — set that field once the client's IG link is known and
+              this card appears automatically, no code change needed. */}
+          {contact.instagram && (
+            <Reveal delay={0.14} className="glass-card contact-phone-card">
+              <span className="contact-phone-icon">
+                <InstagramIcon />
+              </span>
+              <div>
+                <div className="contact-phone-name">Instagram</div>
+                <a
+                  href={contact.instagram.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="contact-phone-number"
+                >
+                  {contact.instagram.label ?? "Autostrada Rozwoju"}
+                </a>
+              </div>
+            </Reveal>
+          )}
+        </div>
+
+        {/* Client asked for the Prozone Rent credit in the footer OR a
+            "quality" section — it's in Footer.jsx too; repeated here since
+            Contact is the section most people actually scroll to read. */}
+        <Reveal delay={0.2} className="contact-partner-note">
+          Sprzęt filmowy i fotograficzny dostarcza nasz partner techniczny —{" "}
+          <a href={footer.techPartner.url} target="_blank" rel="noopener noreferrer" className="footer-partner-link">
+            {footer.techPartner.label}
+          </a>
+          .
         </Reveal>
       </div>
     </section>

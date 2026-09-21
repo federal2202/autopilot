@@ -17,6 +17,12 @@ export default function Footer() {
         <div className="footer-bottom">
           &copy; {year} {footer.rightsLine}
           <br />
+          Partner techniczny:{" "}
+          <a href={footer.techPartner.url} target="_blank" rel="noopener noreferrer" className="footer-partner-link">
+            {footer.techPartner.label}
+          </a>{" "}
+          — sprzęt filmowy i fotograficzny najwyższej klasy.
+          <br />
           <span className="footer-credit">made by Fiodar Yermakou</span>
         </div>
       </div>
