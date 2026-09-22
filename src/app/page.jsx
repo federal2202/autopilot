@@ -5,6 +5,7 @@ import Marquee from "@/components/Marquee";
 import Intro from "@/components/Intro";
 import Showreel from "@/components/Showreel";
 import ServicesList from "@/components/ServicesList";
+import Philosophy from "@/components/Philosophy";
 import ProcessSteps from "@/components/ProcessSteps";
 import Faq from "@/components/Faq";
 import Closing from "@/components/Closing";
@@ -23,6 +24,7 @@ export default function Home() {
         <Marquee />
         <Showreel />
         <ServicesList />
+        <Philosophy />
         <ProcessSteps />
         <Faq />
         <Closing />

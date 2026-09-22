@@ -101,6 +101,32 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
+  /* Long Polish words in ordinary text (FAQ answers, the call-widget
+     message, etc.) can be wider than a narrow phone's column. Without
+     this, the only fallback the browser has is to overflow the box; with
+     it, `hyphens: auto` (html lang="pl" in layout.jsx supplies the
+     dictionary) breaks at a real syllable boundary and shows a hyphen, and
+     overflow-wrap is the fallback for a word the dictionary can't split.
+     Doesn't apply inside GSAP SplitText output (PinnedTagline.jsx,
+     Intro.jsx) — once a word is already fragmented into one <div> per
+     character there's no whole word left to hyphenate; see .split-word
+     below for how those are kept from breaking instead. */
+  hyphens: auto;
+  -webkit-hyphens: auto;
+  overflow-wrap: break-word;
+}
+
+/* SplitText's word-level wrapper (PinnedTagline.jsx, Intro.jsx —
+   `wordsClass: "split-word"`) is already display:inline-block, which
+   normally keeps a whole word from breaking across lines — but that box's
+   own shrink-to-fit width is still capped by the space available to it,
+   and once a long word doesn't fit even on its own line, the *character*
+   spans inside it wrap internally instead, splitting the word mid-letter
+   with no hyphen. Forcing nowrap here makes that impossible: the word
+   either fits whole or, in the rare case it's still too wide, overflows
+   its box — never fractures. */
+.split-word {
+  white-space: nowrap;
 }
 
 h1,
@@ -1345,6 +1371,138 @@ section.showreel-section {
   margin-top: var(--sp-9);
 }
 
+/* ============ PHILOSOPHY (Aceternity-style converging beams) ============ */
+
+/* Desktop "stage": fixed-height canvas holding the SVG beams (absolute,
+   filling it) plus the label chips and the converge badge (each positioned
+   via inline left/top from Philosophy.jsx's ANCHORS/CONVERGE constants, as
+   a percentage of this box). */
+.philosophy-stage {
+  position: relative;
+  height: 480px;
+  margin-top: var(--sp-9);
+}
+
+.philosophy-beams {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.philosophy-beam-line {
+  filter: drop-shadow(0 0 3px currentColor);
+}
+
+.philosophy-beam-orange {
+  color: rgba(235, 56, 28, 0.35);
+}
+
+.philosophy-beam-navy {
+  color: rgba(3, 6, 32, 0.3);
+}
+
+.philosophy-label {
+  position: absolute;
+  /* Horizontal centering is a static `x: "-50%"` in Philosophy.jsx's own
+     motion `style`, not here — framer motion writes its own `transform`
+     inline from x/y/rotate/scale, which would otherwise clobber this the
+     moment the animated `y` kicks in. */
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 18px 10px 10px;
+  border-radius: 999px;
+  border: 1.5px solid transparent;
+  background: var(--bg);
+  white-space: nowrap;
+  box-shadow: 0 10px 24px rgba(31, 31, 31, 0.08);
+}
+
+.philosophy-label-orange {
+  border-color: rgba(235, 56, 28, 0.4);
+}
+
+.philosophy-label-navy {
+  border-color: rgba(3, 6, 32, 0.35);
+}
+
+.philosophy-label-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  flex-shrink: 0;
+  border-radius: 50%;
+}
+
+.philosophy-label-orange .philosophy-label-icon {
+  background: rgba(235, 56, 28, 0.1);
+  color: var(--accent);
+}
+
+.philosophy-label-navy .philosophy-label-icon {
+  background: rgba(3, 6, 32, 0.07);
+  color: var(--navy);
+}
+
+.philosophy-label-icon .icon {
+  width: 17px;
+  height: 17px;
+}
+
+.philosophy-label-text {
+  font-family: var(--font-grotesk), var(--font-geist), sans-serif;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+  color: var(--fg);
+}
+
+/* The pill the beams converge into — sits dead center at the bottom of the
+   stage, right where CONVERGE in Philosophy.jsx points every beam. */
+.philosophy-converge {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  /* Centering is the static `x: "-50%"` in Philosophy.jsx's motion style —
+     see the matching note on .philosophy-label. */
+  padding: 14px 28px;
+  border-radius: 999px;
+  background: linear-gradient(120deg, var(--navy), var(--navy-light));
+  color: var(--cream);
+  font-family: var(--font-grotesk), var(--font-geist), sans-serif;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: -0.1px;
+  box-shadow: 0 16px 32px rgba(3, 6, 32, 0.25);
+}
+
+/* Mobile/tablet fallback (below the 1280px stage breakpoint) — the beams
+   don't have the room to read as three distinct converging lines at that
+   width, so this is just the same labels and the converge badge in normal
+   document flow, no animation, no absolute positioning. */
+.philosophy-list {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-4);
+  margin-top: var(--sp-8);
+}
+
+.philosophy-label.is-static {
+  position: static;
+  transform: none;
+}
+
+.philosophy-converge.is-static {
+  position: static;
+  transform: none;
+  margin-top: var(--sp-3);
+}
+
 /* ============ PROCESS STEPS ============ */
 
 .process-teaser {
@@ -1774,11 +1932,16 @@ section.showreel-section {
   background: var(--card);
 }
 
-@media (max-width: 480px) {
+/* On phones this sits at the bottom edge like a normal mobile
+   notification/toast (with a safe-area offset for the home-indicator
+   area), not floated up at 20% like the desktop version — up at 20% on a
+   short mobile viewport reads as "stuck in the middle of the screen"
+   rather than as an incoming-message toast. */
+@media (max-width: 720px) {
   .call-widget {
     left: 12px;
     right: 12px;
-    bottom: 20%;
+    bottom: max(16px, env(safe-area-inset-bottom, 0px) + 8px);
     width: auto;
   }
 }

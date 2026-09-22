@@ -64,3 +64,29 @@ export function PlusIcon(props) {
   );
 }
 
+export function ClockIcon(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="icon" {...props}>
+      <circle cx="12" cy="12" r="9" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 7v5.5l3.5 2" />
+    </svg>
+  );
+}
+
+export function ChartIcon(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="icon" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M4 20V13M12 20V8M20 20V4" />
+    </svg>
+  );
+}
+
+export function LayersIcon(props) {
+  return (
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" className="icon" {...props}>
+      <path strokeLinecap="round" strokeLinejoin="round" d="M12 3l9 5-9 5-9-5 9-5z" />
+      <path strokeLinecap="round" strokeLinejoin="round" d="M3 13l9 5 9-5" />
+    </svg>
+  );
+}
+

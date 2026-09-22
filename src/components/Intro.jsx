@@ -31,7 +31,12 @@ export default function Intro() {
       gsap.registerPlugin(ScrollTrigger, SplitText);
 
       ctx = gsap.context(() => {
-        split = new SplitText(aboutRef.current, { type: "chars" });
+        // "words,chars" (not just "chars") plus wordsClass — see the
+        // matching comment in PinnedTagline.jsx: without a nowrap'd
+        // word-level box, splitting straight into loose char spans lets
+        // the browser wrap a long word onto the next line mid-letter, with
+        // no hyphen, whenever it doesn't fit this column's width.
+        split = new SplitText(aboutRef.current, { type: "words,chars", wordsClass: "split-word" });
         // Ghost -> ink color scrub only — a blur-in was tried alongside
         // this (per an earlier "make the reveal more interesting"
         // request) and then asked to be removed again, so back to the

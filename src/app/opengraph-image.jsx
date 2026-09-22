@@ -40,10 +40,10 @@ export default async function Image() {
           <div style={{ fontSize: 32, fontWeight: 700, letterSpacing: 1 }}>{site.name}</div>
         </div>
         <div style={{ marginTop: 48, fontSize: 56, fontWeight: 700, lineHeight: 1.15, maxWidth: 980 }}>
-          Rolki, strona WWW i automatyzacje dla Twojej firmy
+          Full-Stack Media & Automation Studio
         </div>
         <div style={{ marginTop: 28, fontSize: 28, color: "#5a5a5a", maxWidth: 900 }}>
-          Pakiet AUTOPILOT albo usługi osobno — Ty wybierasz.
+          Ty zajmujesz się biznesem. My robimy resztę na autopilocie.
         </div>
         <div style={{ marginTop: 56, display: "flex", alignItems: "center", gap: 16 }}>
           <div style={{ width: 44, height: 8, background: "#eb381c", borderRadius: 4 }} />

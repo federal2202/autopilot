@@ -43,7 +43,17 @@ export default function PinnedTagline() {
       gsap.registerPlugin(ScrollTrigger, SplitText);
 
       ctx = gsap.context(() => {
-        split = new SplitText(textRef.current, { type: "words,chars" });
+        // wordsClass: SplitText's word-level <div> is inline-block, which
+        // normally keeps a whole word from wrapping — but that box's own
+        // shrink-to-fit width is still capped by the available space, and
+        // once a long word (e.g. "przedpotopowego" at this heading's huge
+        // clamp() size on a narrow phone) doesn't fit even on its own
+        // line, the *char* spans inside it wrap internally instead —
+        // splitting the word mid-letter with no hyphen. white-space:
+        // nowrap on that word box (see .split-word in globals.css) forces
+        // the browser to keep every word intact and, in the rare case it's
+        // still too wide, let it overflow rather than fracture it.
+        split = new SplitText(textRef.current, { type: "words,chars", wordsClass: "split-word" });
         gsap.set(split.chars, { color: "rgba(31, 31, 31, 0.16)" });
 
         gsap.to(split.chars, {
