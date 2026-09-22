@@ -29,8 +29,16 @@
   --fg: var(--ink);
   --on-invert: var(--cream);
   --body-text: #57534f;
-  --muted: #8a8683;
-  --muted-2: #b3aeab;
+  /* #726e6b, not #8a8683 — that sat at 3.24:1 on cream, below WCAG AA's
+     4.5:1 for normal text (eyebrow labels/tag pills render this at
+     11-13px, too small to count as "large text"). This clears 4.5:1
+     while staying visually the same warm gray. */
+  --muted: #726e6b;
+  /* #736e6b, not #b3aeab — that sat at 1.97:1 on cream. No consumer
+     needs this token in the cream context yet, but keeping it AA-safe
+     avoids silently shipping an inaccessible color the next time one
+     does. */
+  --muted-2: #736e6b;
   --border: rgba(31, 31, 31, 0.12);
   --border-strong: rgba(31, 31, 31, 0.28);
   --card: rgba(31, 31, 31, 0.035);
@@ -223,9 +231,15 @@ button {
   transition: width 0.25s ease, height 0.25s ease, border-color 0.25s ease, background 0.25s ease;
 }
 
+/* Was 64px, centered dead-on-cursor — big enough to fully cover a
+   compact button's own label (mix-blend-mode: difference then inverts
+   whatever text is underneath, reading as "the button vanished"). Smaller,
+   and nudged toward the cursor's bottom-right in CustomCursor.jsx itself
+   rather than sitting centered on it, so hovering a small target no longer
+   blots out its own label. */
 .cursor-ring.is-active {
-  width: 64px;
-  height: 64px;
+  width: 30px;
+  height: 30px;
   background: rgba(255, 255, 255, 0.12);
   border-color: #fff;
 }
@@ -468,13 +482,15 @@ button {
    hover-invert pattern. */
 .btn-accent {
   background: var(--accent);
-  color: var(--white);
+  /* --navy, not --white — white-on-accent was 3.69:1, below WCAG AA's
+     4.5:1 for this CTA's normal-size label. Navy clears 4.87:1. */
+  color: var(--navy);
   border: 1px solid var(--accent);
 }
 
 .btn-accent::before,
 .btn-accent::after {
-  background: var(--white);
+  background: var(--navy);
 }
 
 .btn-accent:hover {
@@ -547,8 +563,12 @@ button {
   --fg: #f4f5f6;
   --on-invert: var(--near-black);
   --body-text: #9da3aa;
-  --muted: #75797e;
-  --muted-2: #4c4f53;
+  /* #787c81, not #75797e — that sat at 4.37:1 on near-black, just under
+     WCAG AA's 4.5:1. */
+  --muted: #787c81;
+  /* #787b7f, not #4c4f53 — that sat at 2.33:1 on near-black (the
+     contact-phone-name label), well below AA. */
+  --muted-2: #787b7f;
   --border: rgba(196, 201, 207, 0.14);
   --border-strong: rgba(196, 201, 207, 0.34);
   --card: rgba(196, 201, 207, 0.035);
@@ -562,8 +582,16 @@ button {
   --fg: var(--ink);
   --on-invert: var(--cream);
   --body-text: #57534f;
-  --muted: #8a8683;
-  --muted-2: #b3aeab;
+  /* #726e6b, not #8a8683 — that sat at 3.24:1 on cream, below WCAG AA's
+     4.5:1 for normal text (eyebrow labels/tag pills render this at
+     11-13px, too small to count as "large text"). This clears 4.5:1
+     while staying visually the same warm gray. */
+  --muted: #726e6b;
+  /* #736e6b, not #b3aeab — that sat at 1.97:1 on cream. No consumer
+     needs this token in the cream context yet, but keeping it AA-safe
+     avoids silently shipping an inaccessible color the next time one
+     does. */
+  --muted-2: #736e6b;
   --border: rgba(31, 31, 31, 0.12);
   --border-strong: rgba(31, 31, 31, 0.28);
   --card: rgba(31, 31, 31, 0.035);
@@ -698,9 +726,12 @@ button {
   z-index: -1;
   overflow: hidden;
   opacity: 0;
+  /* Closed menu was opacity/pointer-events only — invisible but still in
+     the tab order, so keyboard users tabbed into off-screen links. */
+  visibility: hidden;
   background: var(--cream);
   color: var(--ink);
-  transition: opacity 0.35s ease;
+  transition: opacity 0.35s ease, visibility 0.35s ease;
   pointer-events: none;
   display: flex;
   align-items: center;
@@ -710,6 +741,7 @@ button {
 .mobile-menu.is-open {
   z-index: 998;
   opacity: 1;
+  visibility: visible;
   pointer-events: auto;
 }
 
@@ -1371,13 +1403,14 @@ section.showreel-section {
   margin-top: var(--sp-9);
 }
 
-/* ============ PHILOSOPHY (Aceternity-style converging beams) ============ */
+/* ============ PHILOSOPHY (desktop beams / mobile line) ============ */
 
-/* Desktop "stage": fixed-height canvas holding the SVG beams (absolute,
-   filling it) plus the label chips and the converge badge (each positioned
-   via inline left/top from Philosophy.jsx's ANCHORS/CONVERGE constants, as
-   a percentage of this box). */
-.philosophy-stage {
+/* Desktop: the original 3-beam "Google Gemini Effect" reroll. Fixed-height
+   canvas holding the SVG beams (absolute, filling it) plus the label chips
+   and the converge badge, each positioned via inline left/top from
+   Philosophy.jsx's ANCHORS/BEAM_CONVERGE constants as a percentage of this
+   box — only rendered above the DESKTOP_QUERY breakpoint. */
+.philosophy-beam-stage {
   position: relative;
   height: 480px;
   margin-top: var(--sp-9);
@@ -1403,12 +1436,66 @@ section.showreel-section {
   color: rgba(3, 6, 32, 0.3);
 }
 
-.philosophy-label {
+/* Only inside the beam stage does a label/the converge badge need to be
+   positioned absolutely (against ANCHORS/BEAM_CONVERGE, in %) — the mobile
+   line layout below places the exact same .philosophy-label/.philosophy-
+   converge markup as plain flex children instead, so the shared pill
+   styling further down stays unscoped. */
+.philosophy-beam-stage .philosophy-label {
   position: absolute;
   /* Horizontal centering is a static `x: "-50%"` in Philosophy.jsx's own
      motion `style`, not here — framer motion writes its own `transform`
-     inline from x/y/rotate/scale, which would otherwise clobber this the
-     moment the animated `y` kicks in. */
+     inline from every x/y/rotate/scale it's given, which would otherwise
+     clobber this the moment the animated `y` kicks in. */
+}
+
+.philosophy-beam-stage .philosophy-converge {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  /* Centering is the static `x: "-50%"` in Philosophy.jsx's motion style —
+     see the matching note above. */
+}
+
+/* Mobile: a single straight vertical line instead of the beam layout above
+   — that needs real horizontal width to read as three distinct diverging/
+   converging lines rather than a tangle, which a phone doesn't have. Same
+   "3 principles, one team" idea, just top-to-bottom. */
+.philosophy-line-stage {
+  position: relative;
+  margin-top: var(--sp-9);
+  padding: var(--sp-2) 0;
+}
+
+.philosophy-line-track {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  width: 3px;
+  transform: translateX(-50%);
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.philosophy-line-fill {
+  position: absolute;
+  inset: 0;
+  transform-origin: top;
+  border-radius: 2px;
+  background: linear-gradient(180deg, var(--accent-2), var(--accent), var(--navy));
+}
+
+.philosophy-timeline {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--sp-8);
+}
+
+.philosophy-label {
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -1461,14 +1548,17 @@ section.showreel-section {
   color: var(--fg);
 }
 
-/* The pill the beams converge into — sits dead center at the bottom of the
-   stage, right where CONVERGE in Philosophy.jsx points every beam. */
+/* Desktop beam labels stay on one line (inherit .philosophy-label's own
+   nowrap — the chips are sized to fit their text at that layout); the
+   mobile line's column is narrower relative to these same titles, so its
+   labels need to be able to wrap instead of overflowing their pill. */
+.philosophy-line-stage .philosophy-label-text {
+  white-space: normal;
+  max-width: 260px;
+}
+
+/* The pill the line connects into, at the very bottom of the timeline. */
 .philosophy-converge {
-  position: absolute;
-  left: 50%;
-  bottom: 0;
-  /* Centering is the static `x: "-50%"` in Philosophy.jsx's motion style —
-     see the matching note on .philosophy-label. */
   padding: 14px 28px;
   border-radius: 999px;
   background: linear-gradient(120deg, var(--navy), var(--navy-light));
@@ -1477,30 +1567,14 @@ section.showreel-section {
   font-size: 15px;
   font-weight: 700;
   letter-spacing: -0.1px;
+  text-align: center;
   box-shadow: 0 16px 32px rgba(3, 6, 32, 0.25);
 }
 
-/* Mobile/tablet fallback (below the 1280px stage breakpoint) — the beams
-   don't have the room to read as three distinct converging lines at that
-   width, so this is just the same labels and the converge badge in normal
-   document flow, no animation, no absolute positioning. */
-.philosophy-list {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: var(--sp-4);
-  margin-top: var(--sp-8);
-}
-
-.philosophy-label.is-static {
-  position: static;
-  transform: none;
-}
-
-.philosophy-converge.is-static {
-  position: static;
-  transform: none;
-  margin-top: var(--sp-3);
+@media (max-width: 480px) {
+  .philosophy-line-stage .philosophy-label-text {
+    max-width: 200px;
+  }
 }
 
 /* ============ PROCESS STEPS ============ */
@@ -1979,7 +2053,9 @@ section.showreel-section {
 
 .footer-bottom {
   text-align: center;
-  color: #75797e;
+  /* #787c81, not #75797e — that sat at 4.37:1 on this near-black
+     background, just under WCAG AA's 4.5:1. */
+  color: #787c81;
   font-size: 12px;
   letter-spacing: 0.3px;
   line-height: 1.7;
@@ -2000,6 +2076,42 @@ section.showreel-section {
 }
 
 .footer-partner-link:hover {
+  color: #f4f5f6;
+}
+
+.footer-legal {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid rgba(196, 201, 207, 0.14);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  text-align: center;
+}
+
+.footer-legal-entity {
+  font-size: 12px;
+  line-height: 1.7;
+  color: #787c81;
+  max-width: 640px;
+}
+
+.footer-legal-links {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px 20px;
+}
+
+.footer-legal-links a {
+  font-size: 12px;
+  color: #9da3aa;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.footer-legal-links a:hover {
   color: #f4f5f6;
 }
 
@@ -2089,4 +2201,136 @@ select:focus-visible {
   outline: 1px solid var(--fg);
   outline-offset: 3px;
   border-radius: 2px;
+}
+
+/* ============ LEGAL PAGES ============ */
+
+.legal-page {
+  /* Navbar is position: fixed and overlays the page — every other
+     section clears it via Hero's own height, but these pages have no
+     hero, so they need explicit clearance instead. */
+  padding-top: clamp(120px, 16vw, 168px);
+}
+
+.legal-container {
+  max-width: 760px;
+}
+
+.legal-updated {
+  margin-top: var(--sp-3);
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.legal-body {
+  margin-top: var(--sp-9);
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-8);
+}
+
+.legal-section h2 {
+  font-size: clamp(18px, 2vw, 22px);
+  font-weight: 700;
+  margin-bottom: var(--sp-4);
+}
+
+.legal-section p {
+  color: var(--body-text);
+  line-height: 1.7;
+  margin-bottom: var(--sp-3);
+}
+
+.legal-section p:last-child {
+  margin-bottom: 0;
+}
+
+.legal-section ul {
+  color: var(--body-text);
+  line-height: 1.7;
+  padding-left: 1.2em;
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+
+.legal-section a {
+  color: var(--fg);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* ============ COOKIE CONSENT ============ */
+
+.cookie-consent {
+  position: fixed;
+  left: var(--sp-4);
+  right: var(--sp-4);
+  bottom: var(--sp-4);
+  z-index: 1200;
+  max-width: 560px;
+  margin: 0 auto;
+  background: var(--near-black);
+  color: #f4f5f6;
+  border: 1px solid rgba(196, 201, 207, 0.18);
+  border-radius: 16px;
+  padding: var(--sp-6);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+}
+
+.cookie-consent p {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #c4c9cf;
+  margin: 0 0 var(--sp-5);
+}
+
+.cookie-consent a {
+  color: #f4f5f6;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.cookie-consent-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-3);
+}
+
+/* Smaller than the site's usual hero-CTA .btn sizing (16px/30px padding,
+   1.5px letter-spacing) — that's tuned for a big standalone "ZAMÓW
+   AUTOPILOTA" button, not two side-by-side labels in a utility banner.
+   At the full CTA size, "Akceptuj wszystkie" has no room to fit next to
+   "Tylko niezbędne" on a narrow phone. */
+.cookie-consent-actions .btn {
+  flex: 1 1 auto;
+  justify-content: center;
+  padding: 12px 18px;
+  font-size: 11.5px;
+  letter-spacing: 1px;
+}
+
+@media (max-width: 480px) {
+  .cookie-consent {
+    left: var(--sp-3);
+    right: var(--sp-3);
+    bottom: var(--sp-3);
+    padding: var(--sp-5);
+  }
+
+  .cookie-consent p {
+    font-size: 13px;
+  }
+
+  /* Stacked instead of squeezed side-by-side — "Akceptuj wszystkie" is
+     long enough in Polish that fitting it next to the other button on a
+     narrow phone means one of the two either wraps mid-word or overflows
+     its own pill. */
+  .cookie-consent-actions {
+    flex-direction: column;
+  }
+
+  .cookie-consent-actions .btn {
+    width: 100%;
+  }
 }

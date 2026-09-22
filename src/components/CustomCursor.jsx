@@ -22,6 +22,13 @@ export default function CustomCursor() {
     let ringY = window.innerHeight / 2;
     let targetX = ringX;
     let targetY = ringY;
+    let isActive = false;
+    // Nudges the ring away from dead-center-on-cursor while hovering
+    // something clickable, so it sits toward that element's bottom-right
+    // instead of directly on top of whatever text/icon is under the
+    // pointer — see the matching .cursor-ring.is-active comment in
+    // globals.css for why that overlap was a problem in the first place.
+    const ACTIVE_OFFSET = 14;
 
     const onMove = (e) => {
       targetX = e.clientX;
@@ -30,15 +37,17 @@ export default function CustomCursor() {
         dotRef.current.style.transform = `translate(${targetX}px, ${targetY}px) translate(-50%, -50%)`;
       }
       const el = e.target.closest("a, button, .magnetic");
-      ringRef.current?.classList.toggle("is-active", Boolean(el));
+      isActive = Boolean(el);
+      ringRef.current?.classList.toggle("is-active", isActive);
     };
 
     let frame;
     const tick = () => {
       ringX += (targetX - ringX) * 0.18;
       ringY += (targetY - ringY) * 0.18;
+      const offset = isActive ? ACTIVE_OFFSET : 0;
       if (ringRef.current) {
-        ringRef.current.style.transform = `translate(${ringX}px, ${ringY}px) translate(-50%, -50%)`;
+        ringRef.current.style.transform = `translate(${ringX + offset}px, ${ringY + offset}px) translate(-50%, -50%)`;
       }
       frame = requestAnimationFrame(tick);
     };
