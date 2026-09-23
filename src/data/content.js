@@ -5,7 +5,7 @@ export const site = {
   title: "AR Autopilot — Full-Stack Media & Automation Studio",
   description:
     "Przejmujemy kompleksowo media społecznościowe, produkcję kinowego wideo, kampanie Meta i Google Ads, PR oraz Design & Tech. Wdrażamy automatyzacje AI, które zamieniają odbiorców w płacących klientów 24/7.",
-  url: "https://www.ar-autopilot.pl",
+  url: "https://www.autopilotar.pl",
   locale: "pl_PL",
 };
 
@@ -13,7 +13,7 @@ export const contact = {
   eyebrow: "Kontrola misji",
   heading: "Włącz autopilota",
   subtext: "Porozmawiajmy o Twojej marce i wprowadźmy Twój biznes na najwyższy poziom.",
-  email: "kontakt@ar-autopilot.pl",
+  email: "kontakt@autopilotar.pl",
   emailLabel: "Napisz do nas bezpośrednio",
   emailCta: "Napisz e-mail",
   phone: {
@@ -30,6 +30,28 @@ export const contact = {
   // Contact.jsx nie renderuje karty/ikony (patrz komentarz tam), żeby na
   // stronie nie wisiał martwy link.
   instagram: null,
+};
+
+// Dane rejestrowe firmy — zasilają Footer.jsx ("Add & check business
+// details") i strony /polityka-prywatnosci, /regulamin, /polityka-cookies,
+// /polityka-zwrotow. TODO: podmień na prawdziwe dane (pełna nazwa
+// prawna, NIP, REGON, adres siedziby, forma działalności) — dopóki
+// zostają placeholderami w nawiasach, renderują się na stronie tak jak
+// są, żeby braku danych nie dało się przeoczyć przed publikacją.
+export const legal = {
+  entity: {
+    name: "[Pełna nazwa prawna firmy]",
+    form: "[jednoosobowa działalność gospodarcza / sp. z o.o. / inna forma]",
+    nip: "[NIP]",
+    regon: "[REGON]",
+    // Ustaw string (np. "0000000000") tylko jeśli podmiot jest wpisany do
+    // KRS — jednoosobowa działalność gospodarcza go nie ma, zostaw `null`.
+    krs: null,
+    address: "[ul. Przykładowa 1, 00-000 Miasto]",
+  },
+  // Data ostatniej aktualizacji dokumentów — zaktualizuj przy każdej
+  // zmianie treści polityk/regulaminu.
+  lastUpdated: "22.09.2026",
 };
 
 export const navLinks = [

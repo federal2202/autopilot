@@ -91,7 +91,7 @@ export default function ServicesList() {
                     projection. Also means the browser starts loading all
                     three photos on first paint instead of on first tap. */}
                 <div className="services-thumb-wrap">
-                  <img src={item.thumb} alt={item.name} className="services-thumb" aria-hidden="true" />
+                  <img src={item.thumb} alt="" className="services-thumb" aria-hidden="true" />
                 </div>
               </Reveal>
             );

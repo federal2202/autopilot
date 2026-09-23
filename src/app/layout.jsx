@@ -5,6 +5,7 @@ import MotionProvider from "@/components/MotionProvider";
 import SmoothScroll from "@/components/SmoothScroll";
 import CustomCursor from "@/components/CustomCursor";
 import GrainOverlay from "@/components/GrainOverlay";
+import CookieConsent from "@/components/CookieConsent";
 
 const geist = localFont({
   src: [
@@ -86,6 +87,7 @@ export default function RootLayout({ children }) {
           <GrainOverlay />
           <CustomCursor />
           {children}
+          <CookieConsent />
         </MotionProvider>
       </body>
     </html>

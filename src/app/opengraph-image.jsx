@@ -47,7 +47,7 @@ export default async function Image() {
         </div>
         <div style={{ marginTop: 56, display: "flex", alignItems: "center", gap: 16 }}>
           <div style={{ width: 44, height: 8, background: "#eb381c", borderRadius: 4 }} />
-          <div style={{ fontSize: 22, color: "#5a5a5a" }}>ar-autopilot.pl</div>
+          <div style={{ fontSize: 22, color: "#5a5a5a" }}>autopilotar.pl</div>
         </div>
       </div>
     ),

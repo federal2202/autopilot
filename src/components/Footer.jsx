@@ -1,6 +1,12 @@
 import { footer } from "@/data/content";
 import Logo from "./Logo";
 
+// Business-details block ("Add & check business details" — required by
+// ad-platform landing-page policies) + legal page links is built and ready
+// in git history, wired to `legal.entity` in content.js — it's just not
+// rendered yet because that data is still TODO placeholders. Re-enable once
+// the real NIP/REGON/address land.
+
 export default function Footer() {
   const year = new Date().getFullYear();
 
