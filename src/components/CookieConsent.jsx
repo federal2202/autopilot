@@ -1,8 +1,11 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { AnimatePresence, m } from "framer-motion";
+import { prefersReducedMotion } from "./Hero";
 
 const STORAGE_KEY = "ar-autopilot-cookie-consent";
+const EASE = [0.65, 0, 0.35, 1];
 
 // Reads the visitor's stored choice ("all" | "essential") outside React —
 // call this before initializing any analytics/ads pixel so it only loads
@@ -53,23 +56,42 @@ export default function CookieConsent() {
     setVisible(false);
   };
 
-  if (!visible) return null;
+  const reduceMotion = prefersReducedMotion();
 
   return (
-    <div className="cookie-consent" role="dialog" aria-modal="false" aria-labelledby="cookie-consent-heading">
-      <p id="cookie-consent-heading">
-        Używamy plików cookie i podobnych technologii, w tym niezbędnych do działania strony oraz — po Twojej zgodzie —
-        analitycznych i reklamowych. Szczegóły w{" "}
-        <a href="/polityka-cookies">Polityce cookies</a>.
-      </p>
-      <div className="cookie-consent-actions">
-        <button type="button" className="btn btn-ghost" onClick={() => choose("essential")}>
-          Tylko niezbędne
-        </button>
-        <button type="button" className="btn btn-primary" onClick={() => choose("all")}>
-          Akceptuj wszystkie
-        </button>
-      </div>
-    </div>
+    <AnimatePresence>
+      {visible && (
+        <m.div
+          className="cookie-consent"
+          role="dialog"
+          aria-modal="false"
+          aria-labelledby="cookie-consent-heading"
+          initial={reduceMotion ? false : { opacity: 0, y: 24, scale: 0.94 }}
+          animate={{ opacity: 1, y: 0, scale: 1 }}
+          exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: 16, scale: 0.94 }}
+          transition={{ duration: reduceMotion ? 0.15 : 0.45, ease: EASE }}
+        >
+          <p id="cookie-consent-heading">
+            Używamy plików cookie i podobnych technologii, w tym niezbędnych do działania strony oraz — po Twojej
+            zgodzie — analitycznych i reklamowych. Szczegóły w{" "}
+            <a href="/polityka-cookies">Polityce cookies</a>.
+          </p>
+          <div className="cookie-consent-actions">
+            <button type="button" className="btn btn-ghost" onClick={() => choose("essential")}>
+              Tylko niezbędne
+            </button>
+            {/* .btn-accent, not .btn-primary — .btn-primary's hover state
+                (transparent bg, navy text) is built for light/cream
+                sections; on this always-dark banner it made the label
+                unreadable on hover. .btn-accent is the site's existing
+                solid-fill CTA for black-background sections and stays
+                legible in both states here. */}
+            <button type="button" className="btn btn-accent" onClick={() => choose("all")}>
+              Akceptuj wszystkie
+            </button>
+          </div>
+        </m.div>
+      )}
+    </AnimatePresence>
   );
 }

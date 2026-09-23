@@ -2263,6 +2263,17 @@ select:focus-visible {
 /* ============ COOKIE CONSENT ============ */
 
 .cookie-consent {
+  /* .btn-ghost (the "Tylko niezbędne" button) reads --fg/--muted/--border
+     tokens from .section-black/.section-cream depending which section
+     it's in — this banner sits outside both, floating over :root's
+     light-theme defaults, so without its own overrides here .btn-ghost's
+     hover text (var(--fg), near-black) went invisible against this
+     banner's own hardcoded near-black background. Same rgba values
+     .section-black already uses, just scoped locally. */
+  --fg: #f4f5f6;
+  --muted: #787c81;
+  --border: rgba(196, 201, 207, 0.14);
+  --border-strong: rgba(196, 201, 207, 0.34);
   position: fixed;
   left: var(--sp-4);
   right: var(--sp-4);
