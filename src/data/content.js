@@ -13,7 +13,7 @@ export const contact = {
   eyebrow: "Kontrola misji",
   heading: "Włącz autopilota",
   subtext: "Porozmawiajmy o Twojej marce i wprowadźmy Twój biznes na najwyższy poziom.",
-  email: "kontakt@autopilotar.pl",
+  email: "agencjaarkontakt@gmail.com",
   emailLabel: "Napisz do nas bezpośrednio",
   emailCta: "Napisz e-mail",
   phone: {
