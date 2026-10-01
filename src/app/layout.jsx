@@ -1,6 +1,6 @@
 import localFont from "next/font/local";
 import "./globals.css";
-import { site, contact } from "@/data/content";
+import { site, contact, faq } from "@/data/content";
 import MotionProvider from "@/components/MotionProvider";
 import SmoothScroll from "@/components/SmoothScroll";
 import CustomCursor from "@/components/CustomCursor";
@@ -57,6 +57,11 @@ export const metadata = {
   // verification: { google: "PASTE_CODE_HERE" },
 };
 
+// `contact.socials` (content.js) feeds `sameAs` below — an empty array
+// just omits the key, so this degrades cleanly until real profile URLs
+// are added.
+const sameAs = (contact.socials ?? []).map((s) => s.url).filter(Boolean);
+
 const jsonLd = {
   "@context": "https://schema.org",
   "@type": "ProfessionalService",
@@ -68,6 +73,19 @@ const jsonLd = {
   telephone: contact.phone.number,
   areaServed: "PL",
   address: { "@type": "PostalAddress", addressCountry: "PL" },
+  ...(sameAs.length > 0 && { sameAs }),
+};
+
+// FAQPage schema straight off the same `faq.items` the FAQ section
+// already renders — one source of truth, no copy to keep in sync.
+const faqJsonLd = {
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  mainEntity: faq.items.map((item) => ({
+    "@type": "Question",
+    name: item.question,
+    acceptedAnswer: { "@type": "Answer", text: item.answer },
+  })),
 };
 
 export const viewport = {
@@ -78,10 +96,16 @@ export default function RootLayout({ children }) {
   return (
     <html lang="pl" className={geist.variable}>
       <body>
-        <script
-          type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-        />
+        {/* One <script> per schema object — some JSON-LD parsers (browser
+            extensions, crawlers) choke on a top-level array and throw
+            on `r["@context"]`. */}
+        {[jsonLd, faqJsonLd].map((schema) => (
+          <script
+            key={schema["@type"]}
+            type="application/ld+json"
+            dangerouslySetInnerHTML={{ __html: JSON.stringify(schema) }}
+          />
+        ))}
         <MotionProvider>
           <SmoothScroll />
           <GrainOverlay />

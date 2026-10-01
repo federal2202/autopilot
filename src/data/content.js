@@ -30,6 +30,12 @@ export const contact = {
   // Contact.jsx nie renderuje karty/ikony (patrz komentarz tam), żeby na
   // stronie nie wisiał martwy link.
   instagram: null,
+  // TODO: podaj linki do wszystkich aktywnych profili agencji (Instagram,
+  // Facebook, LinkedIn, TikTok, YouTube — cokolwiek istnieje). Zasila
+  // `sameAs` w schemacie JSON-LD (layout.jsx) — im więcej realnych
+  // profili, tym łatwiej wyszukiwarkom AI powiązać je z jedną firmą.
+  // Format: [{ label: "Instagram", url: "https://instagram.com/..." }, …]
+  socials: [],
 };
 
 // Dane rejestrowe firmy — zasilają Footer.jsx ("Add & check business
